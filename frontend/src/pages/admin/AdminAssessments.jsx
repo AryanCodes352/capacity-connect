@@ -1,16 +1,16 @@
 /**
- * src/pages/trainer/TrainerAssessments.jsx
+ * src/pages/admin/AdminAssessments.jsx
  *
- * Trainer assessment management & results dashboard:
- * 1. Available Assessments: View all active competency assessments and take them.
- * 2. My Assessment Attempts: View the Trainer's own completed assessment attempts & scores.
- * 3. Employee Submissions: View and oversee all employee assessment attempts and scores.
+ * Admin Assessment & Submissions Command Center:
+ * 1. Available Assessments: View all active competency tests configured in the system.
+ * 2. Assessment Submissions: View and filter ALL submissions across the organization,
+ *    distinguishing between EMPLOYEE and TRAINER attempts.
+ * 3. Detail Pane: Inspect full metadata (score, level, answers breakdown, timestamps).
  *
- * Accessible to: TRAINER and ADMIN roles
+ * Accessible to: ADMIN role
  * APIs:
- *   - GET /assessments (active assessments catalog)
- *   - GET /assessments/my-attempts (logged-in user's attempts)
- *   - GET /assessments/all-attempts (all workforce submissions)
+ *   - GET /assessments (active catalog)
+ *   - GET /assessments/all-attempts (workforce submissions with user.role)
  */
 
 import { useState, useEffect } from 'react';
@@ -28,16 +28,12 @@ import {
   Building2,
   HelpCircle,
   ArrowRight,
-  History,
-  Layers,
-  Sparkles,
+  Filter,
+  Shield,
+  GraduationCap,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import {
-  getAssessmentsApi,
-  getMyAttemptsApi,
-  getAllAttemptsApi,
-} from '../../api/assessment.api';
+import { getAssessmentsApi, getAllAttemptsApi } from '../../api/assessment.api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import EmptyState from '../../components/common/EmptyState';
 
@@ -58,32 +54,39 @@ const levelBadgeClass = (level) => {
   return map[level] || map[1];
 };
 
-export default function TrainerAssessments() {
+/** Badge for user role (EMPLOYEE vs TRAINER vs ADMIN) */
+const roleBadgeClass = (role) => {
+  switch (role) {
+    case 'TRAINER':
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    case 'ADMIN':
+      return 'bg-rose-100 text-rose-800 border-rose-200';
+    case 'EMPLOYEE':
+    default:
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+  }
+};
+
+export default function AdminAssessments() {
   const [assessments, setAssessments] = useState([]);
-  const [myAttempts, setMyAttempts] = useState([]);
-  const [employeeAttempts, setEmployeeAttempts] = useState([]);
+  const [attempts, setAttempts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null); // selected attempt id for detail panel
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('ALL'); // ALL | EMPLOYEE | TRAINER
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [assessmentsData, myAttemptsData, allAttemptsData] = await Promise.all([
+        const [assessmentsData, allAttemptsData] = await Promise.all([
           getAssessmentsApi({ isActive: true }),
-          getMyAttemptsApi(),
           getAllAttemptsApi(),
         ]);
         setAssessments(assessmentsData || []);
-        setMyAttempts(myAttemptsData || []);
-        // Employee submissions (filter for role === 'EMPLOYEE' or all non-self submissions)
-        const empOnly = (allAttemptsData || []).filter(
-          (a) => a.user?.role === 'EMPLOYEE' || !a.user?.role
-        );
-        setEmployeeAttempts(empOnly.length > 0 ? empOnly : (allAttemptsData || []));
+        setAttempts(allAttemptsData || []);
       } catch (err) {
-        toast.error('Failed to load trainer assessment data');
+        toast.error('Failed to load assessment data');
       } finally {
         setIsLoading(false);
       }
@@ -91,46 +94,56 @@ export default function TrainerAssessments() {
     fetchData();
   }, []);
 
-  // Filter employee submissions by employee name, assessment title, or competency
-  const filteredEmployeeAttempts = employeeAttempts.filter((att) => {
+  // Filter attempts by search string and role filter
+  const filteredAttempts = attempts.filter((att) => {
+    // Role filter
+    if (roleFilter !== 'ALL' && att.user?.role !== roleFilter) {
+      return false;
+    }
+
     if (!search.trim()) return true;
     const q = search.toLowerCase();
     const name = `${att.user?.firstName} ${att.user?.lastName}`.toLowerCase();
     const title = att.assessment?.title?.toLowerCase() || '';
     const competency = att.assessment?.competency?.name?.toLowerCase() || '';
-    return name.includes(q) || title.includes(q) || competency.includes(q);
+    const role = att.user?.role?.toLowerCase() || '';
+    return (
+      name.includes(q) ||
+      title.includes(q) ||
+      competency.includes(q) ||
+      role.includes(q)
+    );
   });
 
-  const selectedAttempt = employeeAttempts.find((a) => a.id === expandedId);
+  const selectedAttempt = attempts.find((a) => a.id === expandedId);
 
-  // Summary stats
-  const totalSubmissions = employeeAttempts.length;
-  const passedCount = employeeAttempts.filter((a) => a.isPassed).length;
-  const uniqueEmployees = new Set(employeeAttempts.map((a) => a.userId)).size;
+  // Summary counts
+  const totalSubmissions = attempts.length;
+  const employeeSubmissionsCount = attempts.filter((a) => a.user?.role === 'EMPLOYEE').length;
+  const trainerSubmissionsCount = attempts.filter((a) => a.user?.role === 'TRAINER').length;
+  const passedCount = attempts.filter((a) => a.isPassed).length;
   const avgScore =
     totalSubmissions > 0
-      ? Math.round(
-          employeeAttempts.reduce((sum, a) => sum + (a.score || 0), 0) / totalSubmissions
-        )
+      ? Math.round(attempts.reduce((sum, a) => sum + (a.score || 0), 0) / totalSubmissions)
       : 0;
 
   if (isLoading) {
-    return <LoadingSpinner text="Loading trainer assessments & submissions..." />;
+    return <LoadingSpinner text="Loading organizational assessment results..." />;
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-2xl p-6 text-white shadow-lg border border-slate-800">
+      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-2xl p-6 lg:p-8 text-white shadow-lg border border-slate-800">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/20">
-              <FileCheck className="w-3.5 h-3.5" />
-              Trainer Assessment Management
+              <Shield className="w-3.5 h-3.5" />
+              Organizational Assessment Governance
             </span>
-            <h1 className="text-2xl lg:text-3xl font-extrabold">Assessments & Results</h1>
+            <h1 className="text-2xl lg:text-3xl font-extrabold">Assessment & Submission Command</h1>
             <p className="text-xs lg:text-sm text-slate-300 max-w-xl">
-              Take competency assessments to evaluate your own skills, and review employee submissions, scores, and proficiency levels in real-time.
+              Supervise all organizational competency evaluations. View submissions from both Employees and Trainers, monitor pass rates, and inspect proficiency levels.
             </p>
           </div>
         </div>
@@ -138,19 +151,19 @@ export default function TrainerAssessments() {
         {/* Summary KPI row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-white/10">
           <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-blue-200">Available Assessments</p>
-            <p className="text-xl font-bold mt-0.5">{assessments.length}</p>
-          </div>
-          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-blue-200">My Completed Tests</p>
-            <p className="text-xl font-bold mt-0.5">{myAttempts.length}</p>
-          </div>
-          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-blue-200">Employee Submissions</p>
+            <p className="text-[11px] text-blue-200">Total Submissions</p>
             <p className="text-xl font-bold mt-0.5">{totalSubmissions}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-emerald-300">Avg Employee Score</p>
+            <p className="text-[11px] text-blue-200">Employee Tests</p>
+            <p className="text-xl font-bold mt-0.5">{employeeSubmissionsCount}</p>
+          </div>
+          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
+            <p className="text-[11px] text-purple-200">Trainer Tests</p>
+            <p className="text-xl font-bold mt-0.5">{trainerSubmissionsCount}</p>
+          </div>
+          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
+            <p className="text-[11px] text-emerald-300">Avg Score</p>
             <p className="text-xl font-bold mt-0.5">{avgScore}%</p>
           </div>
         </div>
@@ -165,10 +178,10 @@ export default function TrainerAssessments() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800">
-                Available Assessments ({assessments.length})
+                Configured Assessments ({assessments.length})
               </h2>
               <p className="text-xs text-slate-500">
-                Choose any active assessment to test and calibrate your competency
+                Active competency evaluation frameworks available in the system
               </p>
             </div>
           </div>
@@ -176,8 +189,8 @@ export default function TrainerAssessments() {
 
         {assessments.length === 0 ? (
           <EmptyState
-            title="No assessments available"
-            description="There are currently no active competency assessments published."
+            title="No assessments configured"
+            description="Create assessments to evaluate workforce competencies."
             icon={FileCheck}
           />
         ) : (
@@ -202,7 +215,7 @@ export default function TrainerAssessments() {
                   </h3>
 
                   <p className="text-xs text-slate-500 line-clamp-2 mb-3">
-                    {a.description || 'Competency assessment and evaluation test.'}
+                    {a.description || 'Competency assessment test.'}
                   </p>
 
                   <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100 mb-3">
@@ -217,18 +230,16 @@ export default function TrainerAssessments() {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>{a._count?.attempts || 0} total attempts</span>
-                    <span className="text-emerald-600 font-semibold">Active</span>
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <div className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{a._count?.attempts || 0} attempts</span>
                   </div>
-
                   <Link
-                    to={`/trainer/assessments/${a.id}/take`}
-                    className="w-full flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs py-2 rounded-lg transition-colors shadow-xs"
+                    to={`/admin/assessments/${a.id}/take`}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800"
                   >
-                    <span>Start Assessment</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    Take Test <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
@@ -237,145 +248,116 @@ export default function TrainerAssessments() {
         )}
       </div>
 
-      {/* ── SECTION 2: TRAINER'S OWN ASSESSMENT ATTEMPTS ────────────────── */}
-      {myAttempts.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-              <History className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">
-                My Assessment Attempts ({myAttempts.length})
-              </h2>
-              <p className="text-xs text-slate-500">
-                Your personal competency assessment history and scores
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
-                  <tr>
-                    <th className="px-4 py-3">Assessment</th>
-                    <th className="px-4 py-3">Competency</th>
-                    <th className="px-4 py-3">Score</th>
-                    <th className="px-4 py-3">Level Achieved</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Submitted Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {myAttempts.map((att) => (
-                    <tr key={att.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-slate-800">
-                        {att.assessment?.title}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {att.assessment?.competency?.name}
-                      </td>
-                      <td className="px-4 py-3 font-bold text-slate-800">
-                        {Math.round(att.score)}%
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border ${levelBadgeClass(att.competencyLevel)}`}>
-                          Level {att.competencyLevel} — {levelLabel(att.competencyLevel)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {att.isPassed ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            Passed
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-500">
-                            <XCircle className="w-3.5 h-3.5" />
-                            Needs Improvement
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right text-slate-400">
-                        {att.completedAt ? new Date(att.completedAt).toLocaleDateString() : 'N/A'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
       <hr className="border-slate-200" />
 
-      {/* ── SECTION 3: EMPLOYEE SUBMISSIONS & RESULTS ────────────────── */}
+      {/* ── SECTION 2: ASSESSMENT SUBMISSIONS (EMPLOYEE & TRAINER) ──────── */}
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
               <Users className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800">
-                Employee Submissions ({employeeAttempts.length})
+                Assessment Submissions ({attempts.length})
               </h2>
               <p className="text-xs text-slate-500">
-                Review scores, competency levels, and test histories for employees
+                Comprehensive log of all attempts submitted by Employees and Trainers
               </p>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search employee, assessment, competency..."
-              className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            />
+          {/* Filters & Search */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Role Filter Tabs */}
+            <div className="inline-flex rounded-lg bg-slate-100 p-1 text-xs font-semibold text-slate-600">
+              <button
+                type="button"
+                onClick={() => setRoleFilter('ALL')}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  roleFilter === 'ALL'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                All ({attempts.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter('EMPLOYEE')}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  roleFilter === 'EMPLOYEE'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                Employees ({employeeSubmissionsCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter('TRAINER')}
+                className={`px-3 py-1.5 rounded-md transition-colors ${
+                  roleFilter === 'TRAINER'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'hover:text-slate-900'
+                }`}
+              >
+                Trainers ({trainerSubmissionsCount})
+              </button>
+            </div>
+
+            {/* Search Box */}
+            <div className="relative w-full sm:w-64">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search user, assessment, role..."
+                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
           </div>
         </div>
 
-        {employeeAttempts.length === 0 ? (
+        {attempts.length === 0 ? (
           <EmptyState
-            title="No employee assessment submissions yet"
-            description="Employee submissions will appear here once employees complete competency assessments."
+            title="No assessment submissions recorded"
+            description="Workforce test attempts will appear here once submitted."
             icon={FileCheck}
           />
-        ) : filteredEmployeeAttempts.length === 0 ? (
+        ) : filteredAttempts.length === 0 ? (
           <EmptyState
-            title="No results match your search"
-            description="Try a different name, assessment title, or competency."
+            title="No matching submissions"
+            description="Try changing the role filter or search keyword."
             icon={Search}
           />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left: Results Table */}
+            {/* Left: Submissions Table */}
             <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
               <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Submissions List ({filteredEmployeeAttempts.length})
+                  Submissions List ({filteredAttempts.length})
                 </h3>
-                <span className="text-[11px] text-slate-400">Click a row for details</span>
+                <span className="text-[11px] text-slate-400">Click row for full details</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
                     <tr>
-                      <th className="px-4 py-3">Employee</th>
+                      <th className="px-4 py-3">User</th>
+                      <th className="px-3 py-3">Role</th>
                       <th className="px-4 py-3">Assessment</th>
-                      <th className="px-4 py-3">Score</th>
-                      <th className="px-4 py-3">Status</th>
+                      <th className="px-3 py-3">Score</th>
+                      <th className="px-3 py-3">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredEmployeeAttempts.map((att) => {
+                    {filteredAttempts.map((att) => {
                       const isSelected = expandedId === att.id;
+                      const role = att.user?.role || 'EMPLOYEE';
+
                       return (
                         <tr
                           key={att.id}
@@ -387,7 +369,7 @@ export default function TrainerAssessments() {
                           }`}
                         >
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex items-center gap-2">
                               <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[11px] shrink-0">
                                 {att.user?.firstName?.[0]?.toUpperCase() || 'U'}
                               </div>
@@ -396,25 +378,34 @@ export default function TrainerAssessments() {
                                   {att.user?.firstName} {att.user?.lastName}
                                 </p>
                                 <p className="text-[10px] text-slate-400 truncate">
-                                  {att.user?.department?.name || att.user?.jobTitle || att.user?.email}
+                                  {att.user?.department?.name || att.user?.email}
                                 </p>
                               </div>
                             </div>
                           </td>
+                          <td className="px-3 py-3">
+                            <span
+                              className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border ${roleBadgeClass(
+                                role
+                              )}`}
+                            >
+                              {role}
+                            </span>
+                          </td>
                           <td className="px-4 py-3">
-                            <p className="font-semibold text-slate-800 truncate max-w-[140px]">
+                            <p className="font-semibold text-slate-800 truncate max-w-[130px]">
                               {att.assessment?.title}
                             </p>
                             <p className="text-[10px] text-blue-600 font-medium">
                               {att.assessment?.competency?.name}
                             </p>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-3">
                             <span className="font-bold text-slate-800">
                               {Math.round(att.score)}%
                             </span>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-3">
                             {att.isPassed ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -423,7 +414,7 @@ export default function TrainerAssessments() {
                             ) : (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-500">
                                 <XCircle className="w-3.5 h-3.5" />
-                                Needs Improvement
+                                Needs Imp.
                               </span>
                             )}
                           </td>
@@ -439,15 +430,24 @@ export default function TrainerAssessments() {
             <div>
               {selectedAttempt ? (
                 <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5 sticky top-20">
-                  {/* Employee Header */}
+                  {/* User Header */}
                   <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
                     <div className="w-11 h-11 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-base shrink-0">
                       {selectedAttempt.user?.firstName?.[0]?.toUpperCase() || 'U'}
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-slate-900">
-                        {selectedAttempt.user?.firstName} {selectedAttempt.user?.lastName}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-900">
+                          {selectedAttempt.user?.firstName} {selectedAttempt.user?.lastName}
+                        </h3>
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border ${roleBadgeClass(
+                            selectedAttempt.user?.role || 'EMPLOYEE'
+                          )}`}
+                        >
+                          {selectedAttempt.user?.role || 'EMPLOYEE'}
+                        </span>
+                      </div>
                       <p className="text-xs text-slate-500">
                         {selectedAttempt.user?.jobTitle || selectedAttempt.user?.email}
                       </p>
@@ -553,7 +553,7 @@ export default function TrainerAssessments() {
                   <FileCheck className="w-10 h-10 mb-3 opacity-40" />
                   <p className="text-sm font-semibold">Select a submission</p>
                   <p className="text-xs mt-1">
-                    Click any row in the table on the left to inspect attempt details
+                    Click any row in the submissions table to inspect attempt details
                   </p>
                 </div>
               )}

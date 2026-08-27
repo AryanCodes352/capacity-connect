@@ -336,11 +336,12 @@ async function getUserAttempts(userId) {
  * Does NOT expose individual answer details.
  */
 async function getAllAttempts(filters = {}) {
-  const { userId, assessmentId } = filters;
+  const { userId, assessmentId, role } = filters;
 
   const where = {
     ...(userId && { userId }),
     ...(assessmentId && { assessmentId }),
+    ...(role && { user: { role } }),
   };
 
   return await prisma.assessmentAttempt.findMany({
@@ -352,6 +353,7 @@ async function getAllAttempts(filters = {}) {
           firstName: true,
           lastName: true,
           email: true,
+          role: true,
           jobTitle: true,
           department: { select: { id: true, name: true } },
         },

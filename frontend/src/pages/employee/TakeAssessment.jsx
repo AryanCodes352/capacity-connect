@@ -16,6 +16,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 import {
   getAssessmentForTakingApi,
   submitAssessmentAttemptApi,
@@ -25,6 +26,21 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 export default function TakeAssessment() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const backPath =
+    user?.role === 'TRAINER'
+      ? '/trainer/assessments'
+      : user?.role === 'ADMIN'
+      ? '/admin/assessments'
+      : '/assessments';
+
+  const profilePath =
+    user?.role === 'TRAINER'
+      ? '/trainer/dashboard'
+      : user?.role === 'ADMIN'
+      ? '/admin/dashboard'
+      : '/my-competencies';
 
   const [assessment, setAssessment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,13 +61,13 @@ export default function TakeAssessment() {
         }
       } catch (err) {
         toast.error('Failed to load assessment questions');
-        navigate('/assessments');
+        navigate(backPath);
       } finally {
         setIsLoading(false);
       }
     };
     loadAssessment();
-  }, [id, navigate]);
+  }, [id, navigate, backPath]);
 
   // Timer countdown
   useEffect(() => {
@@ -288,13 +304,13 @@ export default function TakeAssessment() {
 
             <div className="flex items-center justify-center gap-3 pt-4">
               <Link
-                to="/my-competencies"
+                to={profilePath}
                 className="px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
-                View Updated Competency Profile
+                {user?.role === 'EMPLOYEE' ? 'View Updated Competency Profile' : 'View Dashboard'}
               </Link>
               <Link
-                to="/assessments"
+                to={backPath}
                 className="px-5 py-2.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
               >
                 Back to Assessments

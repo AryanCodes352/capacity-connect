@@ -20,6 +20,7 @@ import Departments from '../pages/admin/Departments';
 import Roles from '../pages/admin/Roles';
 import Competencies from '../pages/admin/Competencies';
 import AdminCourses from '../pages/admin/Courses';
+import AdminAssessments from '../pages/admin/AdminAssessments';
 import TrainingAssignments from '../pages/admin/TrainingAssignments';
 import Analytics from '../pages/admin/Analytics';
 import KnowledgeAdmin from '../pages/admin/KnowledgeAdmin';
@@ -97,8 +98,8 @@ export default function AppRouter() {
           <Route path="/trainer/courses"            element={<AdminCourses />} />
           <Route path="/trainer/courses/create"     element={<AdminCourses />} />
           <Route path="/trainer/courses/:id"        element={<AdminCourses />} />
-          {/* Trainer-specific assessment results page (not the employee take-test page) */}
           <Route path="/trainer/assessments"        element={<TrainerAssessments />} />
+          <Route path="/trainer/assessments/:id/take" element={<TakeAssessment />} />
           <Route path="/trainer/learners"           element={<Employees />} />
         </Route>
       </Route>
@@ -112,6 +113,8 @@ export default function AppRouter() {
           <Route path="/admin/roles"        element={<Roles />} />
           <Route path="/admin/competencies" element={<Competencies />} />
           <Route path="/admin/courses"      element={<AdminCourses />} />
+          <Route path="/admin/assessments"  element={<AdminAssessments />} />
+          <Route path="/admin/assessments/:id/take" element={<TakeAssessment />} />
           <Route path="/admin/training"     element={<TrainingAssignments />} />
           <Route path="/admin/analytics"    element={<Analytics />} />
           <Route path="/admin/knowledge"    element={<KnowledgeAdmin />} />

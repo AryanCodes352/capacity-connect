@@ -36,6 +36,7 @@ export default function Sidebar({ isOpen, onClose }) {
     { to: '/admin/roles', label: 'Org Roles', icon: Briefcase },
     { to: '/admin/competencies', label: 'Competencies', icon: Award },
     { to: '/admin/courses', label: 'Courses & LMS', icon: BookOpen },
+    { to: '/admin/assessments', label: 'Assessments & Submissions', icon: FileCheck },
     { to: '/admin/training', label: 'Training Assignments', icon: GraduationCap },
     { to: '/admin/analytics', label: 'Analytics & Heatmap', icon: BarChart3 },
     { to: '/admin/knowledge', label: 'Knowledge Hub', icon: FileText },
