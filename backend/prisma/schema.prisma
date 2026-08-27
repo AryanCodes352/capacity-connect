@@ -1,0 +1,578 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CAPACITY CONNECT — Prisma Schema
+// Database: PostgreSQL
+// ORM: Prisma 7.x
+//
+// DESIGN PRINCIPLES:
+//  - Every table has a cuid() primary key, createdAt, updatedAt
+//  - Foreign keys use onDelete: Cascade where child data is meaningless without parent
+//  - Foreign keys use onDelete: SetNull where the parent reference is optional
+//  - Unique constraints prevent duplicate data at the database level
+//  - Indexes on every foreign key column + commonly filtered columns
+//  - String[] arrays (PostgreSQL native) for tags — no separate join table needed
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ENUMS ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  TRAINER
+  EMPLOYEE
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LessonType {
+  TEXT
+  VIDEO
+  PDF
+  EXTERNAL_LINK
+  DOCUMENT
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+enum GapPriority {
+  NONE
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ResourceCategory {
+  SOP
+  GUIDELINE
+  FAQ
+  POLICY
+  BEST_PRACTICE
+  TECHNICAL_DOCUMENT
+  TRAINING_RESOURCE
+}
+
+enum NotificationType {
+  TRAINING_ASSIGNED
+  DEADLINE_APPROACHING
+  ASSESSMENT_AVAILABLE
+  COURSE_COMPLETED
+  NEW_RECOMMENDATION
+  NEW_RESOURCE
+}
+
+// ─── USER ─────────────────────────────────────────────────────────────────────
+// Central entity. Can be ADMIN, TRAINER, or EMPLOYEE.
+// Employees belong to a Department and are assigned an OrgRole.
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String   // bcrypt hash — NEVER stored as plaintext
+  firstName    String
+  lastName     String
+  role         UserRole @default(EMPLOYEE)
+  avatar       String?
+  phone        String?
+  isActive     Boolean  @default(true)
+  departmentId String?
+  orgRoleId    String?
+  jobTitle     String?  // display title (e.g. "Junior Software Engineer")
+
+  // Relations
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  orgRole    OrgRole?    @relation(fields: [orgRoleId], references: [id], onDelete: SetNull)
+
+  // As trainer — courses they created
+  coursesCreated Course[] @relation("TrainerCourses")
+
+  // As employee
+  employeeCompetencies EmployeeCompetency[]
+  skillGaps            SkillGap[]
+  recommendations      Recommendation[]
+  enrollments          Enrollment[]
+  lessonProgress       LessonProgress[]
+  assessmentAttempts   AssessmentAttempt[]
+  trainingAssignments  TrainingAssignment[]
+  notifications        Notification[]
+  uploadedResources    KnowledgeResource[] @relation("ResourceUploader")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([departmentId])
+  @@index([orgRoleId])
+  @@index([role])
+}
+
+// ─── DEPARTMENT ───────────────────────────────────────────────────────────────
+
+model Department {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  code        String? @unique // short code, e.g. "IT", "HR"
+
+  users    User[]
+  orgRoles OrgRole[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── ORGANIZATIONAL ROLE ──────────────────────────────────────────────────────
+// An OrgRole is a job role within the org (e.g. "Software Developer").
+// It defines WHICH competencies are required and AT WHAT LEVEL.
+// This is different from UserRole (ADMIN/TRAINER/EMPLOYEE).
+
+model OrgRole {
+  id           String  @id @default(cuid())
+  name         String  @unique
+  description  String?
+  departmentId String?
+
+  department       Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  users            User[]
+  roleCompetencies RoleCompetency[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([departmentId])
+}
+
+// ─── COMPETENCY ───────────────────────────────────────────────────────────────
+// A skill or capability that can be measured (e.g. "SQL", "Leadership").
+// Competencies have levels 1–maxLevel (default 4).
+
+model Competency {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  category    String? // "Technical", "Soft Skills", "Leadership", etc.
+  maxLevel    Int     @default(4) // typically 1–4
+
+  roleCompetencies     RoleCompetency[]
+  employeeCompetencies EmployeeCompetency[]
+  courseCompetencies   CourseCompetency[]
+  skillGaps            SkillGap[]
+  assessments          Assessment[]
+  recommendations      Recommendation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
+
+// ─── ROLE ↔ COMPETENCY MAPPING ───────────────────────────────────────────────
+// Defines what competency level is REQUIRED for a given OrgRole.
+// This is the foundation of the skill gap engine.
+
+model RoleCompetency {
+  id            String @id @default(cuid())
+  orgRoleId     String
+  competencyId  String
+  requiredLevel Int // 1–4: the minimum level needed for this role
+
+  orgRole    OrgRole    @relation(fields: [orgRoleId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orgRoleId, competencyId])
+  @@index([orgRoleId])
+  @@index([competencyId])
+}
+
+// ─── EMPLOYEE COMPETENCY ──────────────────────────────────────────────────────
+// Stores the CURRENT competency level of an employee.
+// Updated whenever the employee completes an assessment.
+
+model EmployeeCompetency {
+  id           String   @id @default(cuid())
+  userId       String
+  competencyId String
+  currentLevel Int // 1–4: the level the employee is currently at
+  assessedAt   DateTime @default(now()) // last time this was updated
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, competencyId])
+  @@index([userId])
+  @@index([competencyId])
+}
+
+// ─── COURSE ───────────────────────────────────────────────────────────────────
+
+model Course {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  category      String?
+  difficulty    String? // "Beginner", "Intermediate", "Advanced"
+  durationHours Int? // estimated hours to complete
+  thumbnail     String?
+  status        CourseStatus @default(DRAFT)
+  trainerId     String
+
+  trainer User @relation("TrainerCourses", fields: [trainerId], references: [id])
+
+  modules             CourseModule[]
+  competencies        CourseCompetency[]
+  enrollments         Enrollment[]
+  recommendations     Recommendation[]
+  trainingAssignments TrainingAssignment[]
+  assessments         Assessment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([trainerId])
+  @@index([status])
+  @@index([difficulty])
+}
+
+// ─── COURSE ↔ COMPETENCY MAPPING ─────────────────────────────────────────────
+// Maps which competencies a course develops, and to what target level.
+
+model CourseCompetency {
+  id           String @id @default(cuid())
+  courseId     String
+  competencyId String
+  targetLevel  Int? // the competency level this course aims to bring the employee to
+
+  course     Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, competencyId])
+  @@index([courseId])
+  @@index([competencyId])
+}
+
+// ─── COURSE MODULE ────────────────────────────────────────────────────────────
+
+model CourseModule {
+  id          String  @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  order       Int // 1-based position within the course
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([courseId, order])
+}
+
+// ─── LESSON ───────────────────────────────────────────────────────────────────
+
+model Lesson {
+  id          String     @id @default(cuid())
+  moduleId    String
+  title       String
+  content     String? // text content, URL, or file path depending on type
+  type        LessonType @default(TEXT)
+  durationMin Int? // estimated minutes
+  order       Int // 1-based position within the module
+
+  module   CourseModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@index([moduleId, order])
+}
+
+// ─── ENROLLMENT ───────────────────────────────────────────────────────────────
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  progressPct Float     @default(0) // 0.0 – 100.0
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+// ─── LESSON PROGRESS ─────────────────────────────────────────────────────────
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+// ─── ASSESSMENT ───────────────────────────────────────────────────────────────
+// An assessment measures competency in a specific area.
+// Can be standalone (competency assessment) or linked to a course (final exam).
+
+model Assessment {
+  id             String  @id @default(cuid())
+  title          String
+  description    String?
+  competencyId   String
+  courseId       String? // null = standalone competency assessment
+  passingScore   Int     @default(60) // percentage to pass
+  timeLimitMin   Int? // null = no time limit
+  isActive       Boolean @default(true)
+
+  competency Competency @relation(fields: [competencyId], references: [id])
+  course     Course?    @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  questions  Question[]
+  attempts   AssessmentAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([competencyId])
+  @@index([courseId])
+}
+
+// ─── QUESTION ─────────────────────────────────────────────────────────────────
+
+model Question {
+  id           String  @id @default(cuid())
+  assessmentId String
+  text         String
+  explanation  String? // shown to employee after answering
+  order        Int
+  marks        Int     @default(1)
+
+  assessment Assessment       @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  options    QuestionOption[]
+  answers    AttemptAnswer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assessmentId])
+}
+
+// ─── QUESTION OPTION ─────────────────────────────────────────────────────────
+
+model QuestionOption {
+  id         String  @id @default(cuid())
+  questionId String
+  text       String
+  isCorrect  Boolean @default(false)
+
+  question Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers  AttemptAnswer[]
+
+  @@index([questionId])
+}
+
+// ─── ASSESSMENT ATTEMPT ───────────────────────────────────────────────────────
+// Records a single employee attempt at an assessment.
+// isPreTraining / isPostTraining flags enable before/after comparison.
+
+model AssessmentAttempt {
+  id              String    @id @default(cuid())
+  userId          String
+  assessmentId    String
+  score           Float // percentage 0–100
+  competencyLevel Int // 1–4 derived from score using competencyLevel.js
+  isPassed        Boolean
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  // Training effectiveness tracking
+  isPreTraining  Boolean @default(false) // taken before training
+  isPostTraining Boolean @default(false) // taken after training
+  courseId       String? // which course this is linked to (for post-training)
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment Assessment @relation(fields: [assessmentId], references: [id])
+  answers    AttemptAnswer[]
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([assessmentId])
+  @@index([userId, assessmentId])
+}
+
+// ─── ATTEMPT ANSWER ───────────────────────────────────────────────────────────
+
+model AttemptAnswer {
+  id               String  @id @default(cuid())
+  attemptId        String
+  questionId       String
+  selectedOptionId String?
+  isCorrect        Boolean
+
+  attempt          AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question         Question          @relation(fields: [questionId], references: [id])
+  selectedOption   QuestionOption?   @relation(fields: [selectedOptionId], references: [id])
+
+  @@index([attemptId])
+}
+
+// ─── SKILL GAP ────────────────────────────────────────────────────────────────
+// Calculated by the skill gap engine (skillGap.service.js).
+// Stores the latest gap for each employee-competency pair.
+// Recalculated whenever an assessment is completed.
+
+model SkillGap {
+  id           String      @id @default(cuid())
+  userId       String
+  competencyId String
+  requiredLevel Int // from the employee's assigned OrgRole
+  currentLevel  Int // from EmployeeCompetency
+  gap          Int // = requiredLevel - currentLevel (always >= 0)
+  priority     GapPriority @default(NONE)
+  calculatedAt DateTime    @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competency Competency @relation(fields: [competencyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, competencyId])
+  @@index([userId])
+  @@index([competencyId])
+  @@index([priority])
+}
+
+// ─── RECOMMENDATION ───────────────────────────────────────────────────────────
+// Generated by the recommendation engine.
+// Links an employee to a course that addresses a skill gap.
+
+model Recommendation {
+  id           String  @id @default(cuid())
+  userId       String
+  courseId     String
+  competencyId String? // which skill gap triggered this recommendation
+  rank         Int // 1 = highest priority recommendation
+  reason       String? // e.g. "Addresses your SQL gap (Level 2 → 4)"
+  isViewed     Boolean @default(false)
+  isDismissed  Boolean @default(false)
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  competency Competency? @relation(fields: [competencyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+// ─── TRAINING ASSIGNMENT ──────────────────────────────────────────────────────
+// Admin assigns specific training to specific employees.
+
+model TrainingAssignment {
+  id         String           @id @default(cuid())
+  userId     String
+  courseId   String
+  assignedBy String // Admin's userId
+  deadline   DateTime?
+  status     AssignmentStatus @default(ASSIGNED)
+  notes      String?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([status])
+  @@index([assignedBy])
+}
+
+// ─── KNOWLEDGE RESOURCE ───────────────────────────────────────────────────────
+
+model KnowledgeResource {
+  id            String           @id @default(cuid())
+  title         String
+  description   String?
+  category      ResourceCategory
+  tags          String[] // PostgreSQL native array
+  fileUrl       String? // local path or Cloudinary/S3 URL
+  fileName      String?
+  fileSize      Int? // bytes
+  mimeType      String?
+  isPublic      Boolean          @default(true)
+  uploadedBy    String
+  viewCount     Int              @default(0)
+  downloadCount Int              @default(0)
+
+  uploader User @relation("ResourceUploader", fields: [uploadedBy], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([uploadedBy])
+}
+
+// ─── NOTIFICATION ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  type    NotificationType
+  title   String
+  message String
+  link    String? // frontend route, e.g. "/courses/abc123"
+  isRead  Boolean          @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, isRead])
+}

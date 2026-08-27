@@ -1,0 +1,76 @@
+/*
+ * src/index.css — Global Styles for CAPACITY CONNECT
+ *
+ * Tailwind v4 uses @import "tailwindcss" instead of the three @tailwind directives.
+ * All custom design tokens (CSS variables) are defined here under @theme.
+ */
+
+@import "tailwindcss";
+
+/* ─── Custom Design Tokens ────────────────────────────────────────────────── */
+@theme {
+  /* Brand Colors */
+  --color-brand-50:  #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  /* Gap Severity Colors */
+  --color-gap-none:     #16a34a; /* green-600 */
+  --color-gap-medium:   #ca8a04; /* yellow-600 */
+  --color-gap-high:     #ea580c; /* orange-600 */
+  --color-gap-critical: #dc2626; /* red-600 */
+
+  /* Typography */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+/* ─── Base Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc; /* slate-50 — app background */
+  color: #1e293b;             /* slate-800 — default text */
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ─── Custom Scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9; /* slate-100 */
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+
+/* ─── Utility: Sidebar transition ────────────────────────────────────────── */
+.sidebar-transition {
+  transition: width 0.2s ease, transform 0.2s ease;
+}

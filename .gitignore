@@ -1,0 +1,38 @@
+# CAPACITY CONNECT — Root .gitignore
+
+# ─── Node ────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Environment Files ────────────────────────────────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Keep the example file! It shows other devs what variables are needed.
+!.env.example
+
+# ─── Prisma ───────────────────────────────────────────────────────────────────
+# Generated client (rebuilt by prisma generate)
+backend/node_modules/.prisma/
+
+# ─── Uploaded files ───────────────────────────────────────────────────────────
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ─── Build Outputs ────────────────────────────────────────────────────────────
+frontend/dist/
+frontend/.vite/
+
+# ─── Editor ───────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
