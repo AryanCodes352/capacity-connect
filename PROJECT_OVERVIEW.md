@@ -331,3 +331,5 @@ Frontend application will be accessible at `http://localhost:5173`.
 ---
 
 *Developed for the Smart India Hackathon (SIH).*
+
+<!-- Automatic deployment test -->
