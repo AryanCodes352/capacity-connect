@@ -1,11 +1,11 @@
 /**
- * src/pages/auth/Login.jsx — Login Page with Role Routing & 1-Click Demo Fill
+ * src/pages/auth/Login.jsx — Login Page
  */
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, BookOpen, Loader2, UserCheck, Shield, GraduationCap, User } from 'lucide-react';
+import { Eye, EyeOff, BookOpen, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import axiosInstance from '../../api/axios.config';
@@ -20,7 +20,6 @@ export default function Login() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm({ mode: 'onBlur' });
 
@@ -58,11 +57,6 @@ export default function Login() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fillCredentials = (email, password) => {
-    setValue('email', email, { shouldValidate: true });
-    setValue('password', password, { shouldValidate: true });
   };
 
   return (
@@ -161,51 +155,6 @@ export default function Login() {
               )}
             </button>
           </form>
-
-          {/* 1-Click Demo Login Fillers for SIH Judges */}
-          <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5 flex items-center gap-1.5">
-              <UserCheck className="w-3.5 h-3.5 text-blue-600" />
-              1-Click Demo Accounts (Click to Fill)
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => fillCredentials('admin@technova.com', 'Admin@123')}
-                className="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 text-left transition-all group cursor-pointer"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold mb-0.5">
-                  <Shield className="w-3 h-3 text-purple-600" />
-                  Admin
-                </div>
-                <p className="text-[10px] text-purple-700 font-mono truncate">admin@technova.com</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillCredentials('rahul@technova.com', 'Employee@123')}
-                className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 text-left transition-all group cursor-pointer"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold mb-0.5">
-                  <User className="w-3 h-3 text-blue-600" />
-                  Employee
-                </div>
-                <p className="text-[10px] text-blue-700 font-mono truncate">rahul@technova.com</p>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillCredentials('priya.trainer@technova.com', 'Trainer@123')}
-                className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-left transition-all group cursor-pointer"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold mb-0.5">
-                  <GraduationCap className="w-3 h-3 text-emerald-600" />
-                  Trainer
-                </div>
-                <p className="text-[10px] text-emerald-700 font-mono truncate">priya.trainer@...</p>
-              </button>
-            </div>
-          </div>
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-6" id="footer-text">

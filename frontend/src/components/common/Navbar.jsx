@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Bell, LogOut, User, Shield, ChevronDown, CheckCheck, Clock, ExternalLink } from 'lucide-react';
+import { Bell, LogOut, ChevronDown, CheckCheck, Menu } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   getMyNotificationsApi,
@@ -13,7 +13,7 @@ import {
   markAllAsReadApi,
 } from '../../api/notification.api';
 
-export default function Navbar({ title = 'Capacity Connect' }) {
+export default function Navbar({ title = 'Capacity Connect', onMenuClick }) {
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -82,15 +82,25 @@ export default function Navbar({ title = 'Capacity Connect' }) {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-lg font-bold text-slate-800 tracking-tight">{title}</h1>
+    <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-3 sm:px-6">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        {/* Hamburger menu — only on mobile */}
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors shrink-0"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <h1 className="text-sm sm:text-base lg:text-lg font-bold text-slate-800 tracking-tight truncate">
+          {title}
+        </h1>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Role Badge */}
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        {/* Role Badge — hidden on very small screens */}
         {user?.role && (
-          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${getRoleBadgeColor(user.role)}`}>
+          <span className={`hidden sm:inline-flex px-2.5 py-1 text-xs font-semibold rounded-full border ${getRoleBadgeColor(user.role)}`}>
             {user.role}
           </span>
         )}
@@ -115,7 +125,7 @@ export default function Navbar({ title = 'Capacity Connect' }) {
 
           {notifOpen && (
             <div
-              className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 py-3 z-50 animate-in fade-in zoom-in-95 duration-100"
+              className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 py-3 z-50 animate-in fade-in zoom-in-95 duration-100"
               onMouseLeave={() => setNotifOpen(false)}
             >
               <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
@@ -137,7 +147,7 @@ export default function Navbar({ title = 'Capacity Connect' }) {
               </div>
 
               {/* Notification List */}
-              <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
+              <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
                 {notifications.length === 0 ? (
                   <div className="p-6 text-center text-xs text-slate-400">
                     No notifications yet
@@ -188,16 +198,16 @@ export default function Navbar({ title = 'Capacity Connect' }) {
               setDropdownOpen((prev) => !prev);
               setNotifOpen(false);
             }}
-            className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
               {user?.firstName?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="text-left hidden md:block">
               <p className="text-xs font-semibold text-slate-800 leading-none">
                 {user?.firstName} {user?.lastName}
               </p>
-              <p className="text-[11px] text-slate-400 mt-0.5 leading-none">
+              <p className="text-[11px] text-slate-400 mt-0.5 leading-none truncate max-w-[120px]">
                 {user?.jobTitle || user?.email}
               </p>
             </div>

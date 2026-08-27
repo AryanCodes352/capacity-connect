@@ -41,6 +41,7 @@ html {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden; /* prevent horizontal scroll on mobile */
 }
 
 body {
@@ -48,10 +49,12 @@ body {
   padding: 0;
   background-color: #f8fafc; /* slate-50 — app background */
   color: #1e293b;             /* slate-800 — default text */
+  overflow-x: hidden; /* prevent horizontal scroll on mobile */
 }
 
 #root {
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ─── Custom Scrollbar ────────────────────────────────────────────────────── */

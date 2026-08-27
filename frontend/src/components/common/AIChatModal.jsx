@@ -75,15 +75,16 @@ export default function AIChatModal() {
       {/* ── Floating Launcher Button ── */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs px-4 py-3 rounded-full shadow-2xl hover:scale-105 transition-all cursor-pointer border border-white/20 ring-4 ring-blue-500/20"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs px-3 py-2.5 sm:px-4 sm:py-3 rounded-full shadow-2xl hover:scale-105 transition-all cursor-pointer border border-white/20 ring-4 ring-blue-500/20"
       >
-        <Sparkles className="w-4 h-4 animate-spin" style={{ animationDuration: '3s' }} />
-        <span>AI Capacity Assistant</span>
+        <Sparkles className="w-4 h-4 animate-spin shrink-0" style={{ animationDuration: '3s' }} />
+        <span className="hidden xs:inline sm:inline">AI Capacity Assistant</span>
+        <span className="xs:hidden sm:hidden">AI</span>
       </button>
 
       {/* ── Chat Modal Window ── */}
       {isOpen && (
-        <div className="fixed bottom-20 right-6 z-50 w-96 sm:w-[420px] max-h-[580px] h-[520px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-16 sm:bottom-20 right-2 sm:right-6 z-50 w-[calc(100vw-1rem)] sm:w-96 max-w-[420px] max-h-[75vh] sm:max-h-[580px] h-[480px] sm:h-[520px] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 p-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-2.5">
