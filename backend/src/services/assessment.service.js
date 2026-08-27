@@ -330,6 +330,43 @@ async function getUserAttempts(userId) {
   });
 }
 
+/**
+ * Get ALL attempts across all employees — for Trainer / Admin oversight view.
+ * Returns attempt + employee info + assessment info.
+ * Does NOT expose individual answer details.
+ */
+async function getAllAttempts(filters = {}) {
+  const { userId, assessmentId } = filters;
+
+  const where = {
+    ...(userId && { userId }),
+    ...(assessmentId && { assessmentId }),
+  };
+
+  return await prisma.assessmentAttempt.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          jobTitle: true,
+          department: { select: { id: true, name: true } },
+        },
+      },
+      assessment: {
+        include: {
+          competency: { select: { id: true, name: true, category: true } },
+          course: { select: { id: true, title: true } },
+        },
+      },
+    },
+    orderBy: { completedAt: 'desc' },
+  });
+}
+
 module.exports = {
   getAllAssessments,
   getAssessmentById,
@@ -337,4 +374,6 @@ module.exports = {
   createAssessment,
   submitAssessmentAttempt,
   getUserAttempts,
+  getAllAttempts,
 };
+

@@ -45,6 +45,15 @@ const getUserAttempts = asyncHandler(async (req, res) => {
   return sendSuccess(res, 200, 'User assessment history retrieved', attempts);
 });
 
+/**
+ * GET /assessments/all-attempts — Trainer/Admin: view all employee submissions
+ * Optional query params: ?userId=...&assessmentId=...
+ */
+const getAllAttempts = asyncHandler(async (req, res) => {
+  const attempts = await assessmentService.getAllAttempts(req.query);
+  return sendSuccess(res, 200, 'All assessment attempts retrieved', attempts);
+});
+
 module.exports = {
   getAllAssessments,
   getAssessmentById,
@@ -53,4 +62,5 @@ module.exports = {
   submitAssessmentAttempt,
   getMyAttempts,
   getUserAttempts,
+  getAllAttempts,
 };

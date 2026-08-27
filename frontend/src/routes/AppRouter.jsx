@@ -24,6 +24,9 @@ import TrainingAssignments from '../pages/admin/TrainingAssignments';
 import Analytics from '../pages/admin/Analytics';
 import KnowledgeAdmin from '../pages/admin/KnowledgeAdmin';
 
+// Trainer Pages
+import TrainerAssessments from '../pages/trainer/TrainerAssessments';
+
 // Employee Pages
 import EmployeeDashboard from '../pages/employee/EmployeeDashboard';
 import MyCompetencies from '../pages/employee/MyCompetencies';
@@ -94,7 +97,8 @@ export default function AppRouter() {
           <Route path="/trainer/courses"            element={<AdminCourses />} />
           <Route path="/trainer/courses/create"     element={<AdminCourses />} />
           <Route path="/trainer/courses/:id"        element={<AdminCourses />} />
-          <Route path="/trainer/assessments"        element={<Assessments />} />
+          {/* Trainer-specific assessment results page (not the employee take-test page) */}
+          <Route path="/trainer/assessments"        element={<TrainerAssessments />} />
           <Route path="/trainer/learners"           element={<Employees />} />
         </Route>
       </Route>

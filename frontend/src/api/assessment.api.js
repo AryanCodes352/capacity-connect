@@ -33,3 +33,20 @@ export const createAssessmentApi = async (data) => {
   const response = await axiosInstance.post('/assessments', data);
   return response.data.data;
 };
+
+/**
+ * Trainer / Admin: get all attempts by a specific employee (by userId).
+ */
+export const getUserAttemptsApi = async (userId) => {
+  const response = await axiosInstance.get(`/assessments/user/${userId}`);
+  return response.data.data;
+};
+
+/**
+ * Trainer / Admin: get ALL employee assessment attempts.
+ * Optional params: { userId, assessmentId }
+ */
+export const getAllAttemptsApi = async (params = {}) => {
+  const response = await axiosInstance.get('/assessments/all-attempts', { params });
+  return response.data.data;
+};
