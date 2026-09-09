@@ -75,30 +75,23 @@ export default function Recommendations() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-800 to-purple-900 rounded-2xl p-6 lg:p-8 text-white shadow-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-xs text-blue-100 border border-white/10">
-              <Sparkles className="w-3.5 h-3.5" />
-              Intelligent Capability Matching
-            </span>
-            <h2 className="text-2xl font-bold">Personalized Learning Pathways</h2>
-            <p className="text-xs lg:text-sm text-blue-100 max-w-xl">
-              These courses are prioritized based on the severity of your evaluated skill gaps, mapping directly to your organizational role requirements.
-            </p>
-          </div>
-
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white font-bold text-xs px-4 py-2.5 rounded-xl backdrop-blur-xs border border-white/20 transition-colors shrink-0 shadow-xs"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Recalculate</span>
-          </button>
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Recommendations</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Courses prioritized by your skill gap severity and role requirements
+          </p>
         </div>
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors shrink-0 disabled:opacity-60"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          Recalculate
+        </button>
       </div>
 
       {/* Recommendations List */}
@@ -125,7 +118,7 @@ export default function Recommendations() {
                     <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                       #{idx + 1}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                       {course?.category} · {course?.difficulty}
                     </span>
                   </div>

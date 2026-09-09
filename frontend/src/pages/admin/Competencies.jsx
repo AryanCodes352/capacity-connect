@@ -135,7 +135,7 @@ export default function Competencies() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Competency Framework</h2>
+          <h1 className="text-2xl font-bold text-slate-900">Competency Framework</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             Manage organizational skill taxonomy, competency definitions, and proficiency scales
           </p>
@@ -195,7 +195,7 @@ export default function Competencies() {
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold border mb-1.5 ${getCategoryColor(comp.category)}`}>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border mb-1.5 ${getCategoryColor(comp.category)}`}>
                       {comp.category || 'General'}
                     </span>
                     <h3 className="text-sm font-bold text-slate-800">{comp.name}</h3>
@@ -224,7 +224,7 @@ export default function Competencies() {
 
                 {/* Level Scale Indicator */}
                 <div className="bg-slate-50 rounded-lg p-2.5 border border-slate-100 mb-4">
-                  <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1.5">
                     <span>Proficiency Scale</span>
                     <span>1 to Level {comp.maxLevel}</span>
                   </div>
@@ -245,15 +245,15 @@ export default function Competencies() {
               <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs text-slate-500">
                 <div className="bg-slate-50 p-1.5 rounded-md">
                   <p className="font-bold text-slate-800">{comp._count?.roleCompetencies || 0}</p>
-                  <p className="text-[10px] text-slate-400">Roles</p>
+                  <p className="text-xs text-slate-400">Roles</p>
                 </div>
                 <div className="bg-slate-50 p-1.5 rounded-md">
                   <p className="font-bold text-slate-800">{comp._count?.courseCompetencies || 0}</p>
-                  <p className="text-[10px] text-slate-400">Courses</p>
+                  <p className="text-xs text-slate-400">Courses</p>
                 </div>
                 <div className="bg-slate-50 p-1.5 rounded-md">
                   <p className="font-bold text-slate-800">{comp._count?.assessments || 0}</p>
-                  <p className="text-[10px] text-slate-400">Assessments</p>
+                  <p className="text-xs text-slate-400">Assessments</p>
                 </div>
               </div>
             </div>
@@ -281,7 +281,7 @@ export default function Competencies() {
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 {errors.name && (
-                  <p className="text-[11px] text-rose-500 mt-1">{errors.name.message}</p>
+                  <p className="text-xs text-rose-500 mt-1">{errors.name.message}</p>
                 )}
               </div>
 

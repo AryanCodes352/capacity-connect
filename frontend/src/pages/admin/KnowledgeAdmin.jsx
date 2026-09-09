@@ -129,7 +129,7 @@ export default function KnowledgeAdmin() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Knowledge Hub & Asset Repository</h2>
+          <h1 className="text-2xl font-bold text-slate-900">Knowledge Hub & Asset Repository</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             Publish, manage, and tag organization SOPs, whitepapers, and best practice documents
           </p>
@@ -168,7 +168,7 @@ export default function KnowledgeAdmin() {
         <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs font-semibold">
                 <tr>
                   <th className="px-5 py-3.5">Asset Title</th>
                   <th className="px-4 py-3.5">Category</th>
@@ -183,10 +183,10 @@ export default function KnowledgeAdmin() {
                   <tr key={res.id} className="hover:bg-slate-50/60 transition-colors">
                     <td className="px-5 py-3.5">
                       <p className="font-bold text-slate-800">{res.title}</p>
-                      <p className="text-[11px] text-slate-400 line-clamp-1">{res.description}</p>
+                      <p className="text-xs text-slate-400 line-clamp-1">{res.description}</p>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                      <span className="inline-flex px-2 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
                         {res.category?.replace('_', ' ')}
                       </span>
                     </td>
@@ -245,7 +245,7 @@ export default function KnowledgeAdmin() {
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 {errors.title && (
-                  <p className="text-[11px] text-rose-500 mt-1">{errors.title.message}</p>
+                  <p className="text-xs text-rose-500 mt-1">{errors.title.message}</p>
                 )}
               </div>
 

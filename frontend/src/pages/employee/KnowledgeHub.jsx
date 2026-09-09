@@ -67,47 +67,43 @@ export default function KnowledgeHub() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-2xl p-6 lg:p-8 text-white shadow-md border border-slate-800">
-        <div className="space-y-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/20">
-            <FileText className="w-3.5 h-3.5" />
-            Centralized Organizational Repository
-          </span>
-          <h1 className="text-2xl font-bold">Knowledge Hub & Technical Library</h1>
-          <p className="text-xs lg:text-sm text-slate-300 max-w-xl">
-            Access verified Standard Operating Procedures, architectural whitepapers, coding guidelines, and competency reference templates.
-          </p>
-        </div>
+    <div className="space-y-6 max-w-6xl mx-auto animate-fade-in">
+      {/* ── Page Header ── */}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Knowledge Hub</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          SOPs, technical docs, best practices, and organizational reference materials
+        </p>
       </div>
 
       {/* Filters Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="relative sm:col-span-2">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search SOPs, whitepapers, best practices, tags..."
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          />
-        </div>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1 sm:col-span-2">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search SOPs, whitepapers, best practices…"
+              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 placeholder-slate-400 transition-all"
+            />
+          </div>
 
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-3 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          <option value="">All Categories</option>
-          <option value="SOP">SOP</option>
-          <option value="BEST_PRACTICE">Best Practice</option>
-          <option value="TECHNICAL_DOC">Technical Doc</option>
-          <option value="POLICY">Policy</option>
-          <option value="TEMPLATE">Template</option>
-          <option value="WHITEPAPER">Whitepaper</option>
-        </select>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-slate-700 cursor-pointer transition-all"
+          >
+            <option value="">All Categories</option>
+            <option value="SOP">SOP</option>
+            <option value="BEST_PRACTICE">Best Practice</option>
+            <option value="TECHNICAL_DOC">Technical Doc</option>
+            <option value="POLICY">Policy</option>
+            <option value="TEMPLATE">Template</option>
+            <option value="WHITEPAPER">Whitepaper</option>
+          </select>
+        </div>
       </div>
 
       {/* Resources Grid */}
@@ -128,10 +124,10 @@ export default function KnowledgeHub() {
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getCategoryBadge(res.category)}`}>
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border ${getCategoryBadge(res.category)}`}>
                     {res.category?.replace('_', ' ')}
                   </span>
-                  <span className="text-[10px] font-semibold text-slate-400">
+                  <span className="text-xs font-semibold text-slate-400">
                     {res.fileType || 'PDF'}
                   </span>
                 </div>
@@ -147,7 +143,7 @@ export default function KnowledgeHub() {
                 {/* Target Competency Tag */}
                 {res.competency && (
                   <div className="mb-4">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-semibold border border-blue-100">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-xs font-semibold border border-blue-100">
                       <Award className="w-3 h-3" />
                       {res.competency.name}
                     </span>
@@ -157,7 +153,7 @@ export default function KnowledgeHub() {
 
               {/* Action Footer */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400">
+                <span className="text-xs text-slate-400">
                   {res.downloadsCount || 0} Downloads
                 </span>
 
@@ -180,7 +176,7 @@ export default function KnowledgeHub() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150 space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border mb-1.5 ${getCategoryBadge(selectedResource.category)}`}>
+                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border mb-1.5 ${getCategoryBadge(selectedResource.category)}`}>
                   {selectedResource.category?.replace('_', ' ')}
                 </span>
                 <h3 className="text-base font-bold text-slate-900">{selectedResource.title}</h3>

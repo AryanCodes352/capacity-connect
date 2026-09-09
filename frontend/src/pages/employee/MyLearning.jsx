@@ -1,5 +1,9 @@
 /**
  * src/pages/employee/MyLearning.jsx — Interactive Learning Player & Enrolled Courses
+ *
+ * FUNCTIONAL NOTE: All API calls (getMyEnrolledCoursesApi, getCourseByIdApi,
+ * toggleLessonProgressApi), all state management, useEffect hooks, and
+ * handleToggleLesson logic are preserved exactly. Only visual layout changed.
  */
 
 import { useState, useEffect } from 'react';
@@ -12,12 +16,11 @@ import {
   Circle,
   Video,
   FileText,
-  Clock,
   Award,
-  ArrowRight,
-  Sparkles,
   ExternalLink,
+  Sparkles,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -26,16 +29,17 @@ import {
   toggleLessonProgressApi,
 } from '../../api/course.api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import EmptyState from '../../components/common/EmptyState';
+import EmptyState     from '../../components/common/EmptyState';
 
 export default function MyLearning() {
-  const [enrollments, setEnrollments] = useState([]);
+  const [enrollments, setEnrollments]       = useState([]);
   const [activeCourseId, setActiveCourseId] = useState(null);
-  const [activeCourse, setActiveCourse] = useState(null);
+  const [activeCourse, setActiveCourse]     = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isToggling, setIsToggling] = useState(false);
+  const [isLoading, setIsLoading]           = useState(true);
+  const [isToggling, setIsToggling]         = useState(false);
 
+  // ── Unchanged functional logic ────────────────────────────────────────────
   const fetchEnrollments = async () => {
     try {
       setIsLoading(true);
@@ -44,27 +48,21 @@ export default function MyLearning() {
       if (data.length > 0 && !activeCourseId) {
         setActiveCourseId(data[0].courseId);
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to load your enrolled courses');
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchEnrollments();
-  }, []);
+  useEffect(() => { fetchEnrollments(); }, []);
 
-  // Fetch full details of the active selected course
   useEffect(() => {
     if (!activeCourseId) return;
-
     const fetchCourseDetails = async () => {
       try {
         const details = await getCourseByIdApi(activeCourseId);
         setActiveCourse(details);
-
-        // Select first lesson if none selected
         if (details.modules?.[0]?.lessons?.[0]) {
           setSelectedLesson(details.modules[0].lessons[0]);
         }
@@ -72,7 +70,6 @@ export default function MyLearning() {
         console.error('Failed to fetch active course details', err);
       }
     };
-
     fetchCourseDetails();
   }, [activeCourseId]);
 
@@ -81,24 +78,18 @@ export default function MyLearning() {
       setIsToggling(true);
       const res = await toggleLessonProgressApi(lessonId);
 
-      // Update activeCourse completedLessonIds & progressPct
       setActiveCourse((prev) => {
         if (!prev) return prev;
         const nextIds = res.isCompleted
           ? [...prev.completedLessonIds, lessonId]
           : prev.completedLessonIds.filter((id) => id !== lessonId);
-
         return {
           ...prev,
           completedLessonIds: nextIds,
-          enrollment: {
-            ...prev.enrollment,
-            progressPct: res.progressPct,
-          },
+          enrollment: { ...prev.enrollment, progressPct: res.progressPct },
         };
       });
 
-      // Update enrollment in list
       setEnrollments((prev) =>
         prev.map((e) =>
           e.courseId === activeCourseId ? { ...e, progressPct: res.progressPct } : e
@@ -110,24 +101,23 @@ export default function MyLearning() {
       } else {
         toast.success(res.isCompleted ? 'Lesson marked completed!' : 'Lesson marked incomplete');
       }
-    } catch (err) {
+    } catch {
       toast.error('Failed to update lesson status');
     } finally {
       setIsToggling(false);
     }
   };
+  // ── End unchanged functional logic ────────────────────────────────────────
 
-  if (isLoading) {
-    return <LoadingSpinner text="Loading your learning workspace..." />;
-  }
+  if (isLoading) return <LoadingSpinner text="Loading your learning workspace…" />;
 
   if (enrollments.length === 0) {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-2xl p-6 text-white shadow-md">
-          <h2 className="text-2xl font-bold">My Learning Workspace</h2>
-          <p className="text-xs text-blue-100 mt-1">
-            Access your active courses, follow lesson modules, and evaluate completed competencies.
+      <div className="space-y-6 max-w-3xl mx-auto animate-fade-in">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">My Learning</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Access your active courses and track your progress
           </p>
         </div>
         <EmptyState
@@ -137,7 +127,7 @@ export default function MyLearning() {
           action={
             <Link
               to="/courses"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2.5 rounded-lg shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm transition-colors"
             >
               <BookOpen className="w-4 h-4" />
               Explore Courses
@@ -149,39 +139,47 @@ export default function MyLearning() {
   }
 
   const isCurrentLessonDone = activeCourse?.completedLessonIds?.includes(selectedLesson?.id);
-  const currentProgress = activeCourse?.enrollment?.progressPct || 0;
+  const currentProgress     = activeCourse?.enrollment?.progressPct || 0;
 
   return (
-    <div className="space-y-6">
-      {/* ── Course Selector Tabs ── */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 border-b border-slate-200">
+    <div className="space-y-5 animate-fade-in">
+      {/* ── Page header ─────────────────────────────────────────────────── */}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">My Learning</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          {enrollments.length} course{enrollments.length !== 1 ? 's' : ''} enrolled
+        </p>
+      </div>
+
+      {/* ── Course Selector Tabs ─────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {enrollments.map((enr) => {
           const isActive = enr.courseId === activeCourseId;
           return (
             <button
               key={enr.id}
               onClick={() => setActiveCourseId(enr.courseId)}
-              className={`flex items-center gap-3 p-3 rounded-xl border text-left shrink-0 transition-all ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-left shrink-0 transition-all duration-200 ${
                 isActive
-                  ? 'border-blue-600 bg-white shadow-md ring-1 ring-blue-600/20'
-                  : 'border-slate-200 bg-white/70 hover:bg-white text-slate-600'
+                  ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
-                <BookOpen className="w-4 h-4" />
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isActive ? 'bg-white/20' : 'bg-slate-100'}`}>
+                <BookOpen className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-800 line-clamp-1 max-w-[200px]">
+                <p className={`text-xs font-semibold line-clamp-1 max-w-[160px] ${isActive ? 'text-white' : 'text-slate-800'}`}>
                   {enr.course?.title}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
-                  <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className={`w-16 h-1 rounded-full overflow-hidden ${isActive ? 'bg-white/20' : 'bg-slate-200'}`}>
                     <div
-                      className="h-full bg-blue-600 transition-all duration-300"
+                      className={`h-full rounded-full ${isActive ? 'bg-white' : 'bg-blue-600'} transition-all duration-500`}
                       style={{ width: `${enr.progressPct}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-bold text-slate-500">
+                  <span className={`text-xs font-semibold ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>
                     {enr.progressPct}%
                   </span>
                 </div>
@@ -191,70 +189,77 @@ export default function MyLearning() {
         })}
       </div>
 
-      {/* ── Learning Player (Split View) ── */}
+      {/* ── Learning Player ─────────────────────────────────────────────── */}
       {activeCourse && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Panel: Curriculum Stepper (4 cols) */}
-          <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-4 shadow-xs space-y-4 h-fit max-h-[80vh] overflow-y-auto">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+          {/* ── Left Panel: Curriculum (4 cols) ── */}
+          <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col max-h-[80vh] overflow-hidden">
+            {/* Course header */}
+            <div className="p-5 border-b border-slate-100">
+              <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
                 {activeCourse.category}
               </span>
-              <h3 className="text-base font-bold text-slate-800 mt-1">
+              <h3 className="text-sm font-bold text-slate-900 mt-2 line-clamp-2">
                 {activeCourse.title}
               </h3>
+
+              {/* Progress bar */}
               <div className="mt-3">
-                <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-1">
-                  <span>Course Progress</span>
-                  <span className="font-bold text-blue-600">{currentProgress}%</span>
+                <div className="flex items-center justify-between text-xs mb-1.5">
+                  <span className="font-medium text-slate-500">Progress</span>
+                  <span className={`font-bold ${currentProgress === 100 ? 'text-emerald-600' : 'text-blue-600'}`}>
+                    {currentProgress}%
+                  </span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-500 ${
-                      currentProgress === 100 ? 'bg-emerald-500' : 'bg-blue-600'
-                    }`}
+                    className={`h-full rounded-full transition-all duration-700 ${currentProgress === 100 ? 'bg-emerald-500' : 'bg-blue-600'}`}
                     style={{ width: `${currentProgress}%` }}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Modules List */}
-            <div className="space-y-3 pt-2 border-t border-slate-100">
+            {/* Modules & Lessons */}
+            <div className="flex-1 overflow-y-auto">
               {activeCourse.modules?.map((mod, modIdx) => (
-                <div key={mod.id} className="space-y-1">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-2 py-1">
-                    Module {modIdx + 1}: {mod.title}
-                  </p>
+                <div key={mod.id}>
+                  {/* Module label */}
+                  <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-100">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">
+                      Module {modIdx + 1}: {mod.title}
+                    </p>
+                  </div>
 
-                  <div className="space-y-0.5">
+                  {/* Lessons */}
+                  <div>
                     {mod.lessons?.map((lesson, lessonIdx) => {
                       const isCompleted = activeCourse.completedLessonIds?.includes(lesson.id);
-                      const isSelected = selectedLesson?.id === lesson.id;
+                      const isSelected  = selectedLesson?.id === lesson.id;
 
                       return (
                         <button
                           key={lesson.id}
                           onClick={() => setSelectedLesson(lesson)}
-                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
+                          className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors border-b border-slate-100 last:border-0 ${
                             isSelected
-                              ? 'bg-blue-600 text-white font-bold shadow-xs'
-                              : 'text-slate-700 hover:bg-slate-100'
+                              ? 'bg-blue-50 border-l-2 border-l-blue-600'
+                              : 'hover:bg-slate-50'
                           }`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            {isCompleted ? (
-                              <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-white' : 'text-emerald-500'}`} />
-                            ) : (
-                              <Circle className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-blue-200' : 'text-slate-300'}`} />
-                            )}
-                            <span className="truncate">
+                          {isCompleted ? (
+                            <CheckCircle2 className={`w-4 h-4 shrink-0 ${isSelected ? 'text-blue-600' : 'text-emerald-500'}`} />
+                          ) : (
+                            <Circle className={`w-4 h-4 shrink-0 ${isSelected ? 'text-blue-600' : 'text-slate-300'}`} />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-xs font-medium truncate ${isSelected ? 'text-blue-700' : 'text-slate-700'}`}>
                               {lessonIdx + 1}. {lesson.title}
-                            </span>
+                            </p>
+                            <p className="text-xs text-slate-400 mt-0.5">{lesson.durationMin}m</p>
                           </div>
-                          <span className={`text-[10px] shrink-0 ml-2 ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
-                            {lesson.durationMin}m
-                          </span>
+                          {isSelected && <ChevronRight className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
                         </button>
                       );
                     })}
@@ -264,87 +269,96 @@ export default function MyLearning() {
             </div>
           </div>
 
-          {/* Right Panel: Active Lesson Content Viewer (8 cols) */}
-          <div className="lg:col-span-8 space-y-6">
+          {/* ── Right Panel: Lesson Content (8 cols) ── */}
+          <div className="lg:col-span-8 space-y-5">
+            {/* Course completion banner */}
             {currentProgress === 100 && (
-              <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-5 text-white shadow-md flex items-center justify-between">
-                <div>
-                  <h4 className="text-base font-bold flex items-center gap-2">
-                    <Sparkles className="w-5 h-5" />
-                    Course Complete! Ready for Post-Training Assessment
-                  </h4>
-                  <p className="text-xs text-emerald-100 mt-0.5">
-                    Take the post-training assessment to verify and upgrade your organizational competency level.
-                  </p>
+              <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-5 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-6 h-6 shrink-0" />
+                  <div>
+                    <p className="font-bold text-base">Course Complete!</p>
+                    <p className="text-xs text-emerald-100 mt-0.5">
+                      Take the post-training assessment to verify your competency level upgrade.
+                    </p>
+                  </div>
                 </div>
                 <Link
                   to="/assessments"
-                  className="bg-white text-emerald-800 hover:bg-emerald-50 font-bold text-xs px-4 py-2 rounded-xl transition-colors shrink-0 shadow-xs"
+                  className="bg-white text-emerald-800 hover:bg-emerald-50 font-semibold text-sm px-4 py-2 rounded-xl transition-colors shrink-0 shadow-sm"
                 >
-                  Take Assessment
+                  Take Assessment →
                 </Link>
               </div>
             )}
 
+            {/* Lesson viewer */}
             {selectedLesson ? (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-xs space-y-6">
-                {/* Lesson Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                {/* Lesson header */}
+                <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
-                      {selectedLesson.type} Lesson
+                    <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                      {selectedLesson.type}
                     </span>
-                    <h2 className="text-xl font-bold text-slate-900 mt-1">
+                    <h2 className="text-lg font-bold text-slate-900 mt-1.5">
                       {selectedLesson.title}
                     </h2>
                   </div>
 
-                  {/* Mark Completed Action Button */}
+                  {/* Toggle completed button */}
                   <button
                     onClick={() => handleToggleLesson(selectedLesson.id)}
                     disabled={isToggling}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm shrink-0 ${
                       isCurrentLessonDone
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20'
                     }`}
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>{isCurrentLessonDone ? 'Completed (Click to undo)' : 'Mark as Completed'}</span>
+                    {isToggling ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4" />
+                    )}
+                    {isCurrentLessonDone ? 'Completed · Undo' : 'Mark Complete'}
                   </button>
                 </div>
 
-                {/* Lesson Content Area */}
-                <div className="prose prose-slate max-w-none text-xs lg:text-sm text-slate-700 leading-relaxed space-y-4">
+                {/* Lesson content */}
+                <div className="p-6">
                   {selectedLesson.type === 'VIDEO' ? (
-                    <div className="bg-slate-900 rounded-2xl aspect-video flex flex-col items-center justify-center text-white p-6 text-center space-y-3">
-                      <PlayCircle className="w-16 h-16 text-blue-500 hover:scale-110 transition-transform cursor-pointer" />
-                      <div>
-                        <p className="font-bold text-sm">{selectedLesson.title}</p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          Video Stream: {selectedLesson.content || 'https://technova.internal/video-stream'}
+                    <div className="bg-slate-900 rounded-2xl aspect-video flex flex-col items-center justify-center text-white gap-4">
+                      <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
+                        <PlayCircle className="w-9 h-9 text-blue-400" />
+                      </div>
+                      <div className="text-center">
+                        <p className="font-semibold text-sm">{selectedLesson.title}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {selectedLesson.content || 'Video stream available in production environment'}
                         </p>
                       </div>
                     </div>
                   ) : selectedLesson.type === 'DOCUMENT' || selectedLesson.type === 'PDF' ? (
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-3">
-                      <FileText className="w-12 h-12 text-amber-500" />
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-800">{selectedLesson.title}</h4>
-                        <p className="text-xs text-slate-500 mt-1">
-                          Attached Resource Document: {selectedLesson.content}
-                        </p>
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center">
+                        <FileText className="w-7 h-7 text-amber-500" />
                       </div>
-                      <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors">
-                        <ExternalLink className="w-3.5 h-3.5" />
+                      <div>
+                        <h4 className="font-semibold text-slate-800 mb-1">{selectedLesson.title}</h4>
+                        <p className="text-sm text-slate-500">{selectedLesson.content}</p>
+                      </div>
+                      <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors">
+                        <ExternalLink className="w-4 h-4" />
                         Open Document
                       </button>
                     </div>
                   ) : (
-                    <div className="bg-slate-50/60 p-6 rounded-2xl border border-slate-100">
-                      <p className="text-sm font-semibold text-slate-800 mb-2">Lesson Overview</p>
-                      <p className="whitespace-pre-line text-slate-600 leading-relaxed">
-                        {selectedLesson.content || 'In this lesson, you will learn practical skills and competencies required to fulfill standard organizational workflows.'}
+                    <div className="bg-slate-50 rounded-xl border border-slate-200 p-6">
+                      <p className="text-sm font-semibold text-slate-800 mb-3">Lesson Content</p>
+                      <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                        {selectedLesson.content ||
+                          'In this lesson, you will learn practical skills and competencies required to fulfill standard organizational workflows.'}
                       </p>
                     </div>
                   )}
@@ -352,8 +366,8 @@ export default function MyLearning() {
               </div>
             ) : (
               <EmptyState
-                title="Select a lesson"
-                description="Click on any lesson from the curriculum sidebar on the left to begin."
+                title="Select a lesson to begin"
+                description="Click on any lesson from the curriculum panel on the left to start learning."
                 icon={PlayCircle}
               />
             )}

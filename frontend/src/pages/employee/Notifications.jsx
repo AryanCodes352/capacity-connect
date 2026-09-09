@@ -76,19 +76,19 @@ export default function Notifications() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Notification Center</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Real-time updates regarding training assignments, assessment evaluations, and competency advancements
+          <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Training assignments, assessment results, and competency updates
           </p>
         </div>
         {notifications.some((n) => !n.isRead) && (
           <button
             onClick={handleMarkAllRead}
-            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm px-4 py-2.5 rounded-xl border border-blue-200 transition-colors"
           >
             <CheckCheck className="w-4 h-4" />
             Mark All as Read
@@ -98,7 +98,7 @@ export default function Notifications() {
 
       {/* Notifications List */}
       {isLoading ? (
-        <LoadingSpinner text="Loading notifications..." />
+        <LoadingSpinner text="Loading notifications…" />
       ) : notifications.length === 0 ? (
         <EmptyState
           title="All caught up!"
@@ -136,7 +136,7 @@ export default function Notifications() {
                     {n.message}
                   </p>
 
-                  <span className="text-[10px] text-slate-400 font-medium block pt-1">
+                  <span className="text-xs text-slate-400 font-medium block pt-1">
                     {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>

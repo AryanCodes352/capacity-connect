@@ -114,7 +114,7 @@ export default function Departments() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Departments</h2>
+          <h1 className="text-2xl font-bold text-slate-900">Departments</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             Manage organizational divisions and view workforce distribution
           </p>
@@ -165,7 +165,7 @@ export default function Departments() {
                     <div>
                       <h3 className="text-sm font-bold text-slate-800">{dept.name}</h3>
                       {dept.code && (
-                        <span className="text-[11px] font-semibold text-slate-400">
+                        <span className="text-xs font-semibold text-slate-400">
                           CODE: {dept.code}
                         </span>
                       )}
@@ -229,7 +229,7 @@ export default function Departments() {
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 {errors.name && (
-                  <p className="text-[11px] text-rose-500 mt-1">{errors.name.message}</p>
+                  <p className="text-xs text-rose-500 mt-1">{errors.name.message}</p>
                 )}
               </div>
 

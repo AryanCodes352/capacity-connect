@@ -153,7 +153,7 @@ export default function TakeAssessment() {
       {/* ── Test Header Bar ── */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
             {assessment.competency?.name} Assessment
           </span>
           <h2 className="text-lg font-bold text-slate-800 mt-1">{assessment.title}</h2>
@@ -291,7 +291,7 @@ export default function TakeAssessment() {
 
             {/* Competency Level Award Banner */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-5 text-white shadow-sm max-w-lg mx-auto">
-              <p className="text-[11px] uppercase tracking-wider text-blue-200 font-semibold">
+              <p className="text-xs uppercase tracking-wider text-blue-200 font-semibold">
                 Updated Competency Level
               </p>
               <h3 className="text-xl font-bold mt-1">
@@ -350,7 +350,7 @@ export default function TakeAssessment() {
                   </div>
 
                   {item.explanation && (
-                    <div className="p-2.5 rounded-lg bg-white/80 border border-slate-200/80 text-slate-600 text-[11px] leading-relaxed">
+                    <div className="p-2.5 rounded-lg bg-white/80 border border-slate-200/80 text-slate-600 text-xs leading-relaxed">
                       <span className="font-bold text-slate-800">Explanation: </span>
                       {item.explanation}
                     </div>

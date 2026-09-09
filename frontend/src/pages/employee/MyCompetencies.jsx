@@ -72,96 +72,76 @@ export default function MyCompetencies() {
   const metCount = totalRequired - gapsCount;
 
   return (
-    <div className="space-y-6">
-      {/* Profile Banner */}
-      <div className="bg-gradient-to-r from-blue-700 to-indigo-800 rounded-2xl p-6 text-white shadow-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-xs text-blue-100 mb-2 border border-white/10">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Assigned Role: {data?.user?.orgRole || 'Software Developer'}
-            </span>
-            <h2 className="text-2xl font-bold">{data?.user?.name}'s Competency Profile</h2>
-            <p className="text-xs text-blue-100 mt-1 max-w-xl">
-              Track your evaluated capability levels against the baseline requirements of your organizational role.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              to="/assessments"
-              className="inline-flex items-center gap-2 bg-white text-blue-800 hover:bg-blue-50 text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-colors"
-            >
-              <Award className="w-4 h-4" />
-              Take Assessment
-            </Link>
-          </div>
+    <div className="space-y-6 animate-fade-in">
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">My Competency Profile</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {data?.user?.orgRole ? `Role: ${data.user.orgRole}` : 'Track your capability levels vs. role requirements'}
+          </p>
         </div>
+        <Link
+          to="/assessments"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors shrink-0"
+        >
+          <Award className="w-4 h-4" />
+          Take Assessment
+        </Link>
+      </div>
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/15">
-          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-blue-200">Role Competencies</p>
-            <p className="text-xl font-bold mt-0.5">{totalRequired}</p>
-          </div>
-          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-emerald-300">Target Level Met</p>
-            <p className="text-xl font-bold mt-0.5">{metCount}</p>
-          </div>
-          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-amber-300">Skill Gaps Identified</p>
-            <p className="text-xl font-bold mt-0.5">{gapsCount}</p>
-          </div>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Required</p>
+          <p className="text-3xl font-bold text-slate-800">{totalRequired}</p>
+          <p className="text-xs text-slate-400 mt-1">role competencies</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-l-4 border-emerald-500 shadow-sm p-5">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Met</p>
+          <p className="text-3xl font-bold text-emerald-600">{metCount}</p>
+          <p className="text-xs text-slate-400 mt-1">target levels reached</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-l-4 border-amber-500 shadow-sm p-5">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Gaps</p>
+          <p className="text-3xl font-bold text-amber-600">{gapsCount}</p>
+          <p className="text-xs text-slate-400 mt-1">need attention</p>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              filter === 'ALL'
-                ? 'bg-blue-600 text-white'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            All Competencies ({competencies.length})
-          </button>
-          <button
-            onClick={() => setFilter('GAPS_ONLY')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              filter === 'GAPS_ONLY'
-                ? 'bg-amber-600 text-white'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Skill Gaps ({gapsCount})
-          </button>
-          <button
-            onClick={() => setFilter('COMPLETED')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              filter === 'COMPLETED'
-                ? 'bg-emerald-600 text-white'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Target Met ({metCount})
-          </button>
+      <div className="flex items-center justify-between gap-4 border-b border-slate-200">
+        <div className="flex items-center gap-1">
+          {[
+            { key: 'ALL', label: `All (${competencies.length})` },
+            { key: 'GAPS_ONLY', label: `Gaps (${gapsCount})` },
+            { key: 'COMPLETED', label: `Met (${metCount})` },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-all -mb-px ${
+                filter === key
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <Link
           to="/recommendations"
-          className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+          className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 mb-2 transition-colors"
         >
-          <span>View Recommended Learning</span>
-          <ArrowUpRight className="w-3.5 h-3.5" />
+          View Recommendations →
         </Link>
       </div>
 
       {/* Competencies List */}
       {isLoading ? (
-        <LoadingSpinner text="Analyzing your competency profile..." />
+        <LoadingSpinner text="Analyzing your competency profile…" />
       ) : filteredCompetencies.length === 0 ? (
         <EmptyState
           title="No competencies found"
@@ -183,7 +163,7 @@ export default function MyCompetencies() {
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
                         {comp.category}
                       </span>
                       <h3 className="text-base font-bold text-slate-800 mt-0.5">
@@ -201,14 +181,14 @@ export default function MyCompetencies() {
                   <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-100 space-y-3">
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <span className="text-slate-400 text-[11px] block">Current Proficiency</span>
+                        <span className="text-slate-400 text-xs block">Current Proficiency</span>
                         <span className="font-bold text-slate-800 text-sm">
                           Level {current} — {comp.levelLabel}
                         </span>
                       </div>
                       {comp.requiredLevel !== null && (
                         <div className="text-right">
-                          <span className="text-slate-400 text-[11px] block">Role Required</span>
+                          <span className="text-slate-400 text-xs block">Role Required</span>
                           <span className="font-bold text-blue-600 text-sm">
                             Level {required}
                           </span>
@@ -218,7 +198,7 @@ export default function MyCompetencies() {
 
                     {/* Progress Bar */}
                     <div>
-                      <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-400 mb-1">
                         <span>Proficiency Match</span>
                         <span>{progressPercent}%</span>
                       </div>
@@ -235,7 +215,7 @@ export default function MyCompetencies() {
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-4">
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-xs text-slate-400">
                     {comp.assessedAt
                       ? `Last assessed on ${new Date(comp.assessedAt).toLocaleDateString()}`
                       : 'Pending initial assessment'}

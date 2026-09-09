@@ -151,19 +151,19 @@ export default function AdminAssessments() {
         {/* Summary KPI row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-white/10">
           <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-blue-200">Total Submissions</p>
+            <p className="text-xs text-blue-200">Total Submissions</p>
             <p className="text-xl font-bold mt-0.5">{totalSubmissions}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-blue-200">Employee Tests</p>
+            <p className="text-xs text-blue-200">Employee Tests</p>
             <p className="text-xl font-bold mt-0.5">{employeeSubmissionsCount}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-purple-200">Trainer Tests</p>
+            <p className="text-xs text-purple-200">Trainer Tests</p>
             <p className="text-xl font-bold mt-0.5">{trainerSubmissionsCount}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-3 backdrop-blur-xs">
-            <p className="text-[11px] text-emerald-300">Avg Score</p>
+            <p className="text-xs text-emerald-300">Avg Score</p>
             <p className="text-xl font-bold mt-0.5">{avgScore}%</p>
           </div>
         </div>
@@ -202,10 +202,10 @@ export default function AdminAssessments() {
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[130px]">
+                    <span className="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[130px]">
                       {a.competency?.name || 'General'}
                     </span>
-                    <span className="text-[11px] font-semibold text-slate-500 shrink-0">
+                    <span className="text-xs font-semibold text-slate-500 shrink-0">
                       Pass: {a.passingScore}%
                     </span>
                   </div>
@@ -218,7 +218,7 @@ export default function AdminAssessments() {
                     {a.description || 'Competency assessment test.'}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100 mb-3">
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-100 mb-3">
                     <div className="flex items-center gap-1">
                       <HelpCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span>{a._count?.questions || 0} Questions</span>
@@ -237,7 +237,7 @@ export default function AdminAssessments() {
                   </div>
                   <Link
                     to={`/admin/assessments/${a.id}/take`}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800"
                   >
                     Take Test <ArrowRight className="w-3 h-3" />
                   </Link>
@@ -340,11 +340,11 @@ export default function AdminAssessments() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Submissions List ({filteredAttempts.length})
                 </h3>
-                <span className="text-[11px] text-slate-400">Click row for full details</span>
+                <span className="text-xs text-slate-400">Click row for full details</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+                  <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs font-semibold">
                     <tr>
                       <th className="px-4 py-3">User</th>
                       <th className="px-3 py-3">Role</th>
@@ -370,14 +370,14 @@ export default function AdminAssessments() {
                         >
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[11px] shrink-0">
+                              <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs shrink-0">
                                 {att.user?.firstName?.[0]?.toUpperCase() || 'U'}
                               </div>
                               <div className="min-w-0">
                                 <p className="font-semibold text-slate-800 truncate">
                                   {att.user?.firstName} {att.user?.lastName}
                                 </p>
-                                <p className="text-[10px] text-slate-400 truncate">
+                                <p className="text-xs text-slate-400 truncate">
                                   {att.user?.department?.name || att.user?.email}
                                 </p>
                               </div>
@@ -385,7 +385,7 @@ export default function AdminAssessments() {
                           </td>
                           <td className="px-3 py-3">
                             <span
-                              className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border ${roleBadgeClass(
+                              className={`inline-flex px-2 py-0.5 rounded-md text-xs font-bold border ${roleBadgeClass(
                                 role
                               )}`}
                             >
@@ -396,7 +396,7 @@ export default function AdminAssessments() {
                             <p className="font-semibold text-slate-800 truncate max-w-[130px]">
                               {att.assessment?.title}
                             </p>
-                            <p className="text-[10px] text-blue-600 font-medium">
+                            <p className="text-xs text-blue-600 font-medium">
                               {att.assessment?.competency?.name}
                             </p>
                           </td>
@@ -407,12 +407,12 @@ export default function AdminAssessments() {
                           </td>
                           <td className="px-3 py-3">
                             {att.isPassed ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                 Passed
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-500">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-500">
                                 <XCircle className="w-3.5 h-3.5" />
                                 Needs Imp.
                               </span>
@@ -441,7 +441,7 @@ export default function AdminAssessments() {
                           {selectedAttempt.user?.firstName} {selectedAttempt.user?.lastName}
                         </h3>
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border ${roleBadgeClass(
+                          className={`inline-flex px-2 py-0.5 rounded-md text-xs font-bold border ${roleBadgeClass(
                             selectedAttempt.user?.role || 'EMPLOYEE'
                           )}`}
                         >
@@ -452,7 +452,7 @@ export default function AdminAssessments() {
                         {selectedAttempt.user?.jobTitle || selectedAttempt.user?.email}
                       </p>
                       {selectedAttempt.user?.department && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1">
                           <Building2 className="w-3 h-3" />
                           {selectedAttempt.user.department.name}
                         </span>
@@ -462,7 +462,7 @@ export default function AdminAssessments() {
 
                   {/* Assessment Info */}
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                       Assessment Details
                     </p>
                     <h4 className="text-sm font-bold text-slate-800">
@@ -483,12 +483,12 @@ export default function AdminAssessments() {
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                       <div className="flex items-center gap-1.5 mb-1">
                         <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Score</p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Score</p>
                       </div>
                       <p className="text-2xl font-extrabold text-slate-800">
                         {Math.round(selectedAttempt.score)}%
                       </p>
-                      <p className="text-[11px] text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                         Passing: {selectedAttempt.assessment?.passingScore || 60}%
                       </p>
                     </div>
@@ -496,7 +496,7 @@ export default function AdminAssessments() {
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                       <div className="flex items-center gap-1.5 mb-1">
                         <Award className="w-3.5 h-3.5 text-purple-600" />
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Level</p>
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Level</p>
                       </div>
                       <span className={`inline-flex px-2 py-0.5 rounded-md text-xs font-bold border ${levelBadgeClass(selectedAttempt.competencyLevel)}`}>
                         Level {selectedAttempt.competencyLevel} — {levelLabel(selectedAttempt.competencyLevel)}
@@ -522,7 +522,7 @@ export default function AdminAssessments() {
                     {selectedAttempt.isPreTraining && (
                       <div className="flex items-center justify-between text-xs py-2 border-b border-slate-100">
                         <span className="text-slate-500 font-medium">Type</span>
-                        <span className="text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full text-[10px]">
+                        <span className="text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-full text-xs">
                           Pre-Training Baseline
                         </span>
                       </div>
@@ -530,7 +530,7 @@ export default function AdminAssessments() {
                     {selectedAttempt.isPostTraining && (
                       <div className="flex items-center justify-between text-xs py-2 border-b border-slate-100">
                         <span className="text-slate-500 font-medium">Type</span>
-                        <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full text-[10px]">
+                        <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full text-xs">
                           Post-Training Evaluation
                         </span>
                       </div>

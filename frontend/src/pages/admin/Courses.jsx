@@ -121,18 +121,18 @@ export default function AdminCourses() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Course & Capacity Programs</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Manage organizational course content, modules, lessons, and target competency mappings
+          <h1 className="text-2xl font-bold text-slate-900">Courses & LMS</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage organizational course content, modules, lessons, and competency mappings
           </p>
         </div>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-xs"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />
           Create Course
@@ -140,20 +140,25 @@ export default function AdminCourses() {
       </div>
 
       {/* Search Filter */}
-      <div className="relative max-w-md">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by title, description, category..."
-          className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        />
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div className="relative max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by title, description, category…"
+            className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 placeholder-slate-400 transition-all"
+          />
+        </div>
+        {!isLoading && (
+          <p className="text-xs text-slate-400 mt-2">{courses.length} course{courses.length !== 1 ? 's' : ''} found</p>
+        )}
       </div>
 
       {/* Grid */}
       {isLoading ? (
-        <LoadingSpinner text="Loading course catalog..." />
+        <LoadingSpinner text="Loading course catalog…" />
       ) : courses.length === 0 ? (
         <EmptyState
           title="No courses found"
@@ -165,48 +170,51 @@ export default function AdminCourses() {
           {courses.map((course) => (
             <div
               key={course.id}
-              className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between"
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between overflow-hidden"
             >
-              <div>
+              {/* Top accent */}
+              <div className="h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600" />
+
+              <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                       {course.category} · {course.difficulty}
                     </span>
-                    <h3 className="text-sm font-bold text-slate-800 mt-0.5">{course.title}</h3>
+                    <h3 className="text-base font-bold text-slate-800 mt-0.5">{course.title}</h3>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => openEditModal(course)}
-                      className="p-1.5 text-slate-400 hover:text-blue-600 rounded-md hover:bg-slate-50 transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                       title="Edit"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setDeleteTarget(course)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-slate-50 transition-colors"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
                       title="Delete"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-500 line-clamp-2 mt-1 mb-4">
+                <p className="text-sm text-slate-500 line-clamp-2 mt-1 mb-4 leading-relaxed">
                   {course.description || 'No description provided.'}
                 </p>
 
                 {/* Target Competencies */}
                 <div className="mb-4">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">
                     Target Competencies
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {course.competencies?.map((cc) => (
                       <span
                         key={cc.id || cc.competencyId}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-semibold border border-blue-100"
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-md text-xs font-semibold border border-blue-100"
                       >
                         <Award className="w-3 h-3" />
                         {cc.competency?.name} (L{cc.targetLevel || 3})
@@ -217,7 +225,7 @@ export default function AdminCourses() {
               </div>
 
               {/* Metrics Footer */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <div className="px-5 py-3.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                 <div className="flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-slate-400" />
                   <span>{course._count?.modules || 0} Modules</span>
@@ -252,7 +260,7 @@ export default function AdminCourses() {
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 {errors.title && (
-                  <p className="text-[11px] text-rose-500 mt-1">{errors.title.message}</p>
+                  <p className="text-xs text-rose-500 mt-1">{errors.title.message}</p>
                 )}
               </div>
 

@@ -174,74 +174,82 @@ export default function Employees() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">User & Employee Management</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Manage organization users, role assignments, and department mappings
+          <h1 className="text-2xl font-bold text-slate-900">Employee Management</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Manage users, role assignments, and department mappings
           </p>
         </div>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-xs"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2.5 rounded-xl shadow-sm transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Add Employee / User
+          Add Employee
         </button>
       </div>
 
       {/* Filters Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="relative sm:col-span-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search name, email, job title…"
+              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 placeholder-slate-400 transition-all"
+            />
+          </div>
+
+          <select
+            value={roleFilter}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setRoleFilter(e.target.value);
               setPage(1);
             }}
-            placeholder="Search name, email, job title..."
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          />
+            className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-slate-700 cursor-pointer transition-all"
+          >
+            <option value="">All Access Roles</option>
+            <option value="ADMIN">Admin</option>
+            <option value="TRAINER">Trainer</option>
+            <option value="EMPLOYEE">Employee</option>
+          </select>
+
+          <select
+            value={deptFilter}
+            onChange={(e) => {
+              setDeptFilter(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-slate-700 cursor-pointer transition-all"
+          >
+            <option value="">All Departments</option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <select
-          value={roleFilter}
-          onChange={(e) => {
-            setRoleFilter(e.target.value);
-            setPage(1);
-          }}
-          className="px-3 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          <option value="">All Access Roles</option>
-          <option value="ADMIN">ADMIN</option>
-          <option value="TRAINER">TRAINER</option>
-          <option value="EMPLOYEE">EMPLOYEE</option>
-        </select>
-
-        <select
-          value={deptFilter}
-          onChange={(e) => {
-            setDeptFilter(e.target.value);
-            setPage(1);
-          }}
-          className="px-3 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          <option value="">All Departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+        {!isLoading && (
+          <p className="text-xs text-slate-400 mt-3">
+            {pagination.total || users.length} user{(pagination.total || users.length) !== 1 ? 's' : ''} found
+          </p>
+        )}
       </div>
 
       {/* User Table */}
       {isLoading ? (
-        <LoadingSpinner text="Loading users..." />
+        <LoadingSpinner text="Loading users…" />
       ) : users.length === 0 ? (
         <EmptyState
           title="No users found"
@@ -249,38 +257,38 @@ export default function Employees() {
           icon={Users}
         />
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="px-5 py-3.5">User</th>
-                  <th className="px-4 py-3.5">Access Role</th>
-                  <th className="px-4 py-3.5">Department</th>
-                  <th className="px-4 py-3.5">Org Role</th>
-                  <th className="px-4 py-3.5">Status</th>
-                  <th className="px-5 py-3.5 text-right">Actions</th>
+                  <th className="px-5 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">User</th>
+                  <th className="px-4 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Role</th>
+                  <th className="px-4 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Department</th>
+                  <th className="px-4 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Org Role</th>
+                  <th className="px-4 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                  <th className="px-5 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="px-5 py-3.5">
+                  <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
                           {u.firstName?.[0]?.toUpperCase()}
                         </div>
                         <div>
                           <p className="font-semibold text-slate-800">
                             {u.firstName} {u.lastName}
                           </p>
-                          <p className="text-[11px] text-slate-400">{u.email}</p>
+                          <p className="text-xs text-slate-400">{u.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5">
+                    <td className="px-4 py-4">
                       <span
-                        className={`inline-flex px-2 py-0.5 rounded-md text-[10px] font-semibold ${
+                        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           u.role === 'ADMIN'
                             ? 'bg-purple-100 text-purple-700'
                             : u.role === 'TRAINER'
@@ -300,7 +308,7 @@ export default function Employees() {
                     <td className="px-4 py-3.5">
                       <button
                         onClick={() => handleToggleStatus(u)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${
                           u.isActive
                             ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
                             : 'bg-rose-50 text-rose-600 hover:bg-rose-100'
@@ -392,7 +400,7 @@ export default function Employees() {
                     className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                   {errors.firstName && (
-                    <p className="text-[11px] text-rose-500 mt-1">{errors.firstName.message}</p>
+                    <p className="text-xs text-rose-500 mt-1">{errors.firstName.message}</p>
                   )}
                 </div>
 
@@ -407,7 +415,7 @@ export default function Employees() {
                     className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                   {errors.lastName && (
-                    <p className="text-[11px] text-rose-500 mt-1">{errors.lastName.message}</p>
+                    <p className="text-xs text-rose-500 mt-1">{errors.lastName.message}</p>
                   )}
                 </div>
               </div>
@@ -427,7 +435,7 @@ export default function Employees() {
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:bg-slate-100 disabled:text-slate-500"
                 />
                 {errors.email && (
-                  <p className="text-[11px] text-rose-500 mt-1">{errors.email.message}</p>
+                  <p className="text-xs text-rose-500 mt-1">{errors.email.message}</p>
                 )}
               </div>
 
@@ -446,7 +454,7 @@ export default function Employees() {
                     className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   />
                   {errors.password && (
-                    <p className="text-[11px] text-rose-500 mt-1">{errors.password.message}</p>
+                    <p className="text-xs text-rose-500 mt-1">{errors.password.message}</p>
                   )}
                 </div>
               )}

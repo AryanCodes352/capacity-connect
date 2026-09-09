@@ -127,7 +127,7 @@ export default function Roles() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-800">Organizational Roles</h2>
+          <h1 className="text-2xl font-bold text-slate-900">Organizational Roles</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             Define organizational roles and their baseline competency requirements
           </p>
@@ -192,7 +192,7 @@ export default function Roles() {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-slate-800">{role.name}</h3>
-                      <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
+                      <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
                         <Building2 className="w-3 h-3" />
                         <span>{role.department?.name || 'Unassigned Dept'}</span>
                       </div>
@@ -222,7 +222,7 @@ export default function Roles() {
 
                 {/* Required Competencies Badges */}
                 <div className="mb-4">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
                     Required Competencies ({role.roleCompetencies?.length || 0})
                   </p>
                   <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
@@ -230,14 +230,14 @@ export default function Roles() {
                       role.roleCompetencies.map((rc) => (
                         <span
                           key={rc.id || rc.competencyId}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-medium"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-xs font-medium"
                         >
                           <Award className="w-3 h-3 text-blue-500" />
                           {rc.competency?.name}: L{rc.requiredLevel}
                         </span>
                       ))
                     ) : (
-                      <span className="text-[11px] text-slate-400 italic">
+                      <span className="text-xs text-slate-400 italic">
                         No competencies mapped yet
                       </span>
                     )}
@@ -276,7 +276,7 @@ export default function Roles() {
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 {errors.name && (
-                  <p className="text-[11px] text-rose-500 mt-1">{errors.name.message}</p>
+                  <p className="text-xs text-rose-500 mt-1">{errors.name.message}</p>
                 )}
               </div>
 

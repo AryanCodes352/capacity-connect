@@ -84,21 +84,13 @@ export default function Analytics() {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 rounded-2xl p-6 lg:p-8 text-white shadow-lg border border-slate-800">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/20">
-              <TrendingUp className="w-3.5 h-3.5" />
-              Outcome & ROI Measurement
-            </span>
-            <h1 className="text-2xl lg:text-3xl font-extrabold">Training Effectiveness Analytics</h1>
-            <p className="text-xs lg:text-sm text-slate-300 max-w-2xl">
-              Measure real employee competency level improvements before and after training programs, proving organizational capacity building ROI.
-            </p>
-          </div>
-        </div>
+    <div className="space-y-8 max-w-7xl mx-auto animate-fade-in">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Training Effectiveness Analytics</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Pre vs. post assessment comparisons, ROI rankings, and departmental capacity heatmap
+        </p>
       </div>
 
       {/* KPI Cards */}
@@ -184,7 +176,7 @@ export default function Analytics() {
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
                       {item.competencyName}
                     </span>
                     <h3 className="text-base font-bold text-slate-900 mt-1">
@@ -210,7 +202,7 @@ export default function Analytics() {
                 {/* Score & Level Metrics Box */}
                 <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-4">
                   <div>
-                    <span className="text-[11px] text-slate-400 block font-medium">Pre-Training</span>
+                    <span className="text-xs text-slate-400 block font-medium">Pre-Training</span>
                     <p className="text-lg font-extrabold text-slate-700">{item.preScore}%</p>
                     <span className="text-xs font-semibold text-slate-500">
                       Level {item.preLevel} ({item.preLevelInfo?.label})
@@ -218,7 +210,7 @@ export default function Analytics() {
                   </div>
 
                   <div className="border-l border-slate-200 pl-3">
-                    <span className="text-[11px] text-emerald-600 block font-bold">Post-Training</span>
+                    <span className="text-xs text-emerald-600 block font-bold">Post-Training</span>
                     <p className="text-lg font-extrabold text-emerald-600">{item.postScore}%</p>
                     <span className="text-xs font-bold text-emerald-700">
                       Level {item.postLevel} ({item.postLevelInfo?.label})
@@ -245,7 +237,7 @@ export default function Analytics() {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px] font-semibold">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs font-semibold">
               <tr>
                 <th className="px-5 py-3.5">Course Program</th>
                 <th className="px-4 py-3.5">Target Skill</th>
@@ -306,7 +298,7 @@ export default function Analytics() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">{dept.departmentName}</h3>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
                     {dept.code || 'DEPT'} · {dept.totalEmployees} Employees
                   </span>
                 </div>
@@ -337,14 +329,14 @@ export default function Analytics() {
 
               {/* Competency Gap List */}
               <div className="space-y-1.5 pt-2 border-t border-slate-200/80">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Key Competency Gaps
                 </p>
                 <div className="space-y-1 max-h-28 overflow-y-auto">
                   {dept.competencyAverages?.slice(0, 3).map((ca, idx) => (
                     <div key={idx} className="flex items-center justify-between text-xs py-0.5">
                       <span className="text-slate-600 truncate max-w-[120px] font-medium">{ca.competency}</span>
-                      <span className="font-bold text-slate-800 text-[11px]">Avg Gap: -{ca.averageGap}</span>
+                      <span className="font-bold text-slate-800 text-xs">Avg Gap: -{ca.averageGap}</span>
                     </div>
                   ))}
                 </div>
