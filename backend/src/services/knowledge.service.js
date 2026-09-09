@@ -5,14 +5,30 @@
 const prisma = require('../config/database');
 
 /**
- * Get all knowledge resources with category, competency, and search filters
+ * Format resource response to preserve frontend contract compatibility:
+ * - Maps `uploader` to `author` (for any components expecting author)
+ * - Maps `downloadCount` to `downloadsCount`
+ * - Provides default `fileType` and safe `competency: null`
+ */
+function mapResourceResponse(resource) {
+  if (!resource) return null;
+  return {
+    ...resource,
+    author: resource.uploader || null,
+    downloadsCount: resource.downloadCount ?? 0,
+    fileType: resource.mimeType || 'PDF',
+    competency: null,
+  };
+}
+
+/**
+ * Get all knowledge resources with category and search filters
  */
 async function getAllResources(query = {}) {
-  const { category, competencyId, search } = query;
+  const { category, search } = query;
 
   const where = {
     ...(category && { category }),
-    ...(competencyId && { competencyId }),
     ...(search && {
       OR: [
         { title: { contains: search, mode: 'insensitive' } },
@@ -22,34 +38,32 @@ async function getAllResources(query = {}) {
     }),
   };
 
-  return await prisma.knowledgeResource.findMany({
+  const resources = await prisma.knowledgeResource.findMany({
     where,
     include: {
-      author: {
+      uploader: {
         select: { id: true, firstName: true, lastName: true, role: true },
-      },
-      competency: {
-        select: { id: true, name: true, category: true },
       },
     },
     orderBy: { createdAt: 'desc' },
   });
+
+  return resources.map(mapResourceResponse);
 }
 
 /**
- * Get single knowledge resource and increment view count
+ * Get single knowledge resource and increment download count
  */
 async function getResourceById(id) {
   const resource = await prisma.knowledgeResource.update({
     where: { id },
     data: {
-      downloadsCount: { increment: 1 },
+      downloadCount: { increment: 1 },
     },
     include: {
-      author: {
+      uploader: {
         select: { id: true, firstName: true, lastName: true, email: true, jobTitle: true },
       },
-      competency: true,
     },
   });
 
@@ -59,43 +73,46 @@ async function getResourceById(id) {
     throw err;
   }
 
-  return resource;
+  return mapResourceResponse(resource);
 }
 
 /**
  * Create a new knowledge resource (Admin / Trainer)
  */
-async function createResource(data, authorId) {
+async function createResource(data, userId) {
   const {
     title,
     description,
     category,
     fileUrl,
+    fileName,
     fileType = 'PDF',
     fileSizeKb,
-    competencyId,
     tags = [],
+    isPublic = true,
   } = data;
 
-  return await prisma.knowledgeResource.create({
+  const resource = await prisma.knowledgeResource.create({
     data: {
       title,
-      description,
+      description: description || null,
       category,
       fileUrl: fileUrl || '/uploads/sample-guide.pdf',
-      fileType,
-      fileSizeKb: fileSizeKb ? parseInt(fileSizeKb, 10) : null,
-      competencyId: competencyId || null,
+      fileName: fileName || null,
+      fileSize: fileSizeKb ? parseInt(fileSizeKb, 10) * 1024 : null,
+      mimeType: fileType || 'application/pdf',
+      isPublic: isPublic !== false,
       tags: Array.isArray(tags) ? tags : [],
-      authorId,
+      uploadedBy: userId,
     },
     include: {
-      competency: true,
-      author: {
-        select: { firstName: true, lastName: true },
+      uploader: {
+        select: { id: true, firstName: true, lastName: true, role: true },
       },
     },
   });
+
+  return mapResourceResponse(resource);
 }
 
 /**
@@ -107,26 +124,32 @@ async function updateResource(id, data) {
     description,
     category,
     fileUrl,
+    fileName,
     fileType,
-    competencyId,
     tags,
+    isPublic,
   } = data;
 
-  return await prisma.knowledgeResource.update({
+  const resource = await prisma.knowledgeResource.update({
     where: { id },
     data: {
       ...(title && { title }),
       ...(description !== undefined && { description }),
       ...(category && { category }),
       ...(fileUrl && { fileUrl }),
-      ...(fileType && { fileType }),
-      ...(competencyId !== undefined && { competencyId: competencyId || null }),
+      ...(fileName && { fileName }),
+      ...(fileType && { mimeType: fileType }),
       ...(tags && { tags: Array.isArray(tags) ? tags : [] }),
+      ...(isPublic !== undefined && { isPublic }),
     },
     include: {
-      competency: true,
+      uploader: {
+        select: { id: true, firstName: true, lastName: true, role: true },
+      },
     },
   });
+
+  return mapResourceResponse(resource);
 }
 
 /**
@@ -143,3 +166,4 @@ module.exports = {
   updateResource,
   deleteResource,
 };
+
